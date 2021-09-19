@@ -8,7 +8,7 @@ const item = document.querySelector('.item'),
 	},
 	dragEnd = (event) => {
 		console.log('drag end')
-		//event.target.classList.remove('hold', 'hide')
+		event.target.classList.remove('hold', 'hide')
 		event.target.className = 'item'
 	},
 	dragOver = (event) => {
