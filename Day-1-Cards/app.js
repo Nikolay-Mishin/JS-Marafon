@@ -1,9 +1,10 @@
-function slidesPlugin(activeSlide = 0) {
+const slidesPlugin = (activeSlide = 0) => {
 	const container = document.getElementById('container'),
 		slides = document.querySelectorAll('.slide'),
-		clearActiveClasses = () => [].filter.call(slides, slide => slide.classList.contains('active'))
+		filter = (obj, cb) => [].filter.call(obj, cb),
+		clearActiveClasses = () => filter(slides, slide => slide.classList.contains('active'))
 			.forEach(slide => slide.classList.remove('active')
-		),
+			),
 		w = 800,
 		data = [
 			{
@@ -44,8 +45,8 @@ function slidesPlugin(activeSlide = 0) {
 			//container.querySelector('.active').classList.remove('active')
 			clearActiveClasses()
 			slide.classList.add('active')
-			console.log(container)
-			console.log(slides)
+			//console.log(container)
+			//console.log(slides)
 			console.log(slide.classList)
 		})
 	})
