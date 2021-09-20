@@ -1,20 +1,58 @@
+const w = 2000,
+	desc = 'History & Travel',
+	data = [
+		{
+			url: '1628107073262-e086371689a6',
+			bg: '220.16deg, #bf936c -8%, #271c0b 138%',
+			title: 'Sunrays at St. Marks square'
+		},
+		{
+			url: '1628106881749-88bf2fb79103',
+			bg: '221.87deg, #605d4e 1%, #aba6a2 128%',
+			title: 'St. Marks basilica at sunrise'
+		},
+		{
+			url: '1583435292794-4803a56c5043',
+			bg: '215.32deg, #e8be5d -1%, #201d1a 124%',
+			title: 'Shwezigon Pagoda'
+		},
+		{
+			url: '1589360395642-bfb140284700',
+			bg: '229.99deg, #c9a15f -26%, #3c6114 145%',
+			title: 'Leeds Castle taken from across the moat in late Autumn sunshine'
+		},
+		{
+			url: '1628523300960-01e94dec7519',
+			bg: '229.99deg, #947435 -26%, #ecd7d4 145%',
+			title: 'Breathtaking Byzantine mosaics of the 14th century at the Chora Church, Istanbul'
+		}
+	]
+
 const slidesPlugin = (slides = 2) => {
 	if (slides < 2) throw new Error('slidesCount could not be < 2')
+	
+	const sidebar = document.querySelector('.sidebar'),
+		controls = document.querySelector('.controls'),
+		container = document.querySelector('.container'),
+		mainSlide = document.querySelector('.main-slide')
 
-	const controls = document.querySelector('.controls')
-	const sidebar = document.querySelector('.sidebar')
-	const sidebarSlides = sidebar.querySelectorAll('div')
-	const container = document.querySelector('.container')
-	const mainSlide = document.querySelector('.main-slide')
+	let sidebarHtml = '',
+		slidesHtml = ''
 
-	if (slides !== sidebarSlides.length) throw new Error('slidesCount and sidebarSlidesCount could be equal')
-
-	slidesHtml = ''
-	sidebarSlides.forEach(() => slidesHtml += '<div></div>')
+	data.forEach((slide, i) => {
+		slidesHtml += '<div></div>'
+		sidebarHtml += `<div>
+				<h1>${data[slides - 1 - i].title}</h1>
+				<p>${data[slides - 1 - i].desc || desc}</p>
+			</div>`
+	})
+	
+	sidebar.insertAdjacentHTML('beforeend', sidebarHtml)
 	mainSlide.insertAdjacentHTML('beforeend', slidesHtml)
 
-	const mainSlides = mainSlide.querySelectorAll('div')
-	const slidesCount = mainSlides.length
+	const sidebarSlides = sidebar.querySelectorAll('div'),
+		mainSlides = mainSlide.querySelectorAll('div'),
+		slidesCount = mainSlides.length
 	let activeSlideIndex = 0
 
 	const changeSlide = (direction) => {
@@ -35,28 +73,6 @@ const slidesPlugin = (slides = 2) => {
 		sidebar.style.transform = `translateY(${activeSlideIndex * height}px)`
 	}
 
-	const w = 1950,
-		data = [
-			{
-				url: '1601574968106-b312ac309953',
-				w: 1996,
-				bg: '220.16deg, #FFE101 -8%, #F39102 138%'
-			},
-			{
-				url: '1511447333015-45b65e60f6d5',
-				w: 2023,
-				bg: '221.87deg, #8308EA 1%, #5305AF 128%'
-			},
-			{
-				url: '1501529301789-b48c1975542a',
-				bg: '215.32deg, #F90306 -1%, #9E0706 124%'
-			},
-			{
-				url: '1520263115673-610416f52ab6',
-				bg: '229.99deg, #11DEE9 -26%, #017E8B 145%'
-			}
-		]
-
 	mainSlides.forEach((slide, i) => {
 		slide.setAttribute('style', `background-image: url('https://images.unsplash.com/photo-${data[i].url}?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=${data[i].w || w}&q=80');`)
 		sidebarSlides[slidesCount - 1 - i].setAttribute('style', `background: linear-gradient(${data[i].bg});`)
@@ -68,10 +84,7 @@ const slidesPlugin = (slides = 2) => {
 		if (action = target.dataset.action || target.parentNode.dataset.action) {
 			changeSlide(action)
 		}
-		console.log(action)
-		console.log(target.dataset)
-		console.log(target)
 	})
 }
 
-slidesPlugin(4)
+slidesPlugin(data.length)
