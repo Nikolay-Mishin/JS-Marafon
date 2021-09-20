@@ -49,6 +49,7 @@ body {
 .placeholder {
 	width: 150px;
 	height: 66px;
+	position: relative;
 }
 
 .start {
@@ -68,20 +69,25 @@ body {
 }
 
 .hold {
-	font-size: 14px;
 	opacity: 0.85;
-	width: 120px;
-	height: 45px;
-	padding: 0.3rem .5rem;
-	background: rgba(255, 166, 0, 0.843);
-	color: white;
-	font-weight: 400;
+	padding: 0.8rem 1rem;
+	background: rgb(139, 138, 138, 0.75);
+	color: #fff;
+	text-align: center;
 }
 
 .hovered {
-	border: 2px dotted white;
-	width: 150px;
-	height: 66px;
 	border-radius: 20px;
-	background: rgba(255, 255, 255, 0.163);
+	border: 3px dotted #05e0bd;
+	width: 150px;
+	height: 75px;
+	background: rgba(143, 211, 244, 0.25);
+}
+
+.drop {
+	border-radius: 20px;
+	border: 2px dotted #ff85e4;
+	width: 150px;
+	height: 75px;
+	background: rgb(209, 176, 8, 0.15);
 }

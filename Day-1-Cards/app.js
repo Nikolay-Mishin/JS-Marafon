@@ -1,11 +1,21 @@
+const filter = (obj, cb) => [].filter.call(obj, cb),
+	register = (obj, prop, value) => obj.__proto__[prop] = value,
+	clearClasses = function (target, ...classList) {
+		target.filter(placeholder => {
+			let contains = false;
+			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true });
+			return contains;
+		}).forEach(placeholder => placeholder.classList.remove(classList))
+	}
+
 const slidesPlugin = (activeSlide = 0) => {
-	const container = document.getElementById('container'),
-		slides = document.querySelectorAll('.slide'),
-		filter = (obj, cb) => [].filter.call(obj, cb),
-		clearActiveClasses = () => filter(slides, slide => slide.classList.contains('active'))
-			.forEach(slide => slide.classList.remove('active')
-			),
-		w = 800,
+	const container = document.querySelector('.container'),
+		slides = document.querySelectorAll('.slide')
+
+	register(slides, 'filter', function (cb) { return filter(this, cb) })
+	register(slides, 'clearClasses', function (...classList) { return clearClasses(this, ...classList) })
+
+	const w = 800,
 		data = [
 			{
 				url: '1628107073262-e086371689a6'
@@ -41,11 +51,18 @@ const slidesPlugin = (activeSlide = 0) => {
 
 	slides.forEach((slide, i) => {
 		slide.setAttribute('style', `background-image: url('https://images.unsplash.com/photo-${data[i].url}?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=${data[i].w || w}&q=80');`)
-		slide.addEventListener('click', () => {
+	})
+
+	container.addEventListener('click', ({ target }) => {
+		if ((slide = target.classList.contains('slide')) || target.parentNode.classList.contains('slide')) {
 			//container.querySelector('.active').classList.remove('active')
-			clearActiveClasses()
+			slides.clearClasses('active')
+			slide = slide ? target : target.parentNode
 			slide.classList.add('active')
-		})
+		}
+		console.log(target)
+		console.log(target.classList)
+		console.log(slide)
 	})
 }
 
