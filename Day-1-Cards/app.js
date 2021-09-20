@@ -41,17 +41,11 @@ const slidesPlugin = (activeSlide = 0) => {
 
 	slides.forEach((slide, i) => {
 		slide.setAttribute('style', `background-image: url('https://images.unsplash.com/photo-${data[i].url}?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=${data[i].w || w}&q=80');`)
-	})
-
-	container.addEventListener('click', ({ target }) => {
-		if (target.classList.contains('slide')) {
+		slide.addEventListener('click', () => {
 			//container.querySelector('.active').classList.remove('active')
 			clearActiveClasses()
-			target.classList.add('active')
-			//console.log(container)
-			//console.log(slides)
-			console.log(target.classList)
-		}
+			slide.classList.add('active')
+		})
 	})
 }
 
