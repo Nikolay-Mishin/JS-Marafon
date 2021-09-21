@@ -6,14 +6,15 @@ const filter = (obj, cb) => [].filter.call(obj, cb),
 			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true });
 			return contains;
 		}).forEach(placeholder => placeholder.classList.remove(classList))
-	}
+	},
+	containers = document.querySelectorAll('.container')
+
+register(containers, 'filter', function (cb) { return filter(this, cb) })
+register(containers, 'clearClasses', function (...classList) { return clearClasses(this, ...classList) })
 
 const slidesPlugin = (activeSlide = 0) => {
 	const container = document.querySelector('.container'),
 		slides = document.querySelectorAll('.slide')
-
-	register(slides, 'filter', function (cb) { return filter(this, cb) })
-	register(slides, 'clearClasses', function (...classList) { return clearClasses(this, ...classList) })
 
 	const w = 800,
 		data = [
@@ -60,9 +61,6 @@ const slidesPlugin = (activeSlide = 0) => {
 			slide = slide ? target : target.parentNode
 			slide.classList.add('active')
 		}
-		console.log(target)
-		console.log(target.classList)
-		console.log(slide)
 	})
 }
 
