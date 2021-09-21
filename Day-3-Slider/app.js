@@ -39,12 +39,12 @@ const slidesPlugin = (slides = 2) => {
 	let sidebarHtml = '',
 		slidesHtml = ''
 
-	data.forEach((slide, i) => {
+	data.slice(0, slides - 1).forEach((slide, i) => {
 		slidesHtml += '<div></div>'
 		sidebarHtml += `<div>
-				<h1>${data[slides - 1 - i].title}</h1>
-				<p>${data[slides - 1 - i].desc || desc}</p>
-			</div>`
+			<h1>${data[slides - 1 - i].title}</h1>
+			<p>${data[slides - 1 - i].desc || desc}</p>
+		</div>`
 	})
 	
 	sidebar.insertAdjacentHTML('beforeend', sidebarHtml)
@@ -84,6 +84,16 @@ const slidesPlugin = (slides = 2) => {
 		if (action = target.dataset.action || target.parentNode.dataset.action) {
 			changeSlide(action)
 		}
+	})
+
+	document.addEventListener('keydown', ({ key }) => {
+		if (key === 'ArrowUp') {
+			changeSlide('up')
+		}
+		else if (key === 'ArrowDown') {
+			changeSlide('down')
+		}
+		console.log(key)
 	})
 }
 

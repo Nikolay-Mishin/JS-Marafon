@@ -1,0 +1,350 @@
+https://jsfiddle.net/weber9966/qkmjLewg/5/
+https://jsfiddle.net/findersen/xzjm2y3f/
+https://jsfiddle.net/gorka/hw2qezv6/1/
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Aim Training | Проект 5</title>
+  </head>
+  <body>
+
+    <div class="screen">
+      <h1>Aim Training</h1>
+      <p>Нужно не кликать, а наводить мышкой ;)</p>
+      <p class="mb-20">Чем меньше мишень тем выше награда!</p>
+      <a href="#" class="start" id="start">Начать игру</a>
+    </div>
+
+    <div class="screen">
+      <h1>Выберите время</h1>
+      <ul class="time-list" id="time-list">
+        <li>
+          <button class="time-btn" data-time="20">
+            20 сек
+          </button>
+        </li>
+        <li>
+          <button class="time-btn" data-time="40">
+            40 сек
+          </button>
+        </li>
+        <li>
+          <button class="time-btn" data-time="60">
+            60 сек
+          </button>
+        </li>
+        <li>
+          <button class="time-btn" data-time="120">
+            2 мин
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="screen">
+      <h3>Осталось <span id="time">00:00</span></h3>
+      <div class="board" id="board"></div>
+      <a href="#" class="start hide" id="new-game">Новая игра</a>
+    </div>
+
+    <script src="app.js"></script>
+
+  </body>
+</html>
+
+
+
+
+
+const screens = document.querySelectorAll('.screen')
+const startButton = document.querySelector('#start')
+const newGameButton = document.querySelector('#new-game')
+const timeList = document.querySelector('#time-list')
+const timeCounter = document.querySelector('#time')
+const board = document.querySelector('#board')
+
+const colors = ['#ADFF2F', '#7FFF00', '#00FF00', '#CD5C5C', '#F08080', '#DC143C', '#FF69B4', '#C71585', '#FF7F50', '#FF4500', '#20B2AA', '#00FFFF', '#FFFF00', '#FF00FF', '#1E90FF']
+
+let time = 0
+let timer = 0
+let factor = 1
+let selectedTime = 0
+let score = 0
+let finish = 0
+
+startButton.addEventListener('click', e => {
+  e.preventDefault()
+  screens[0].classList.add('up')
+})
+
+newGameButton.addEventListener('click', e => {
+  e.preventDefault()
+  startNewGame()
+})
+
+timeList.addEventListener('click', e => {
+  if(e.target.classList.contains('time-btn')) {
+    time = selectedTime = parseInt(e.target.getAttribute('data-time'))
+    startGame()
+  }
+})
+
+board.addEventListener('mouseover', e => {
+  if(e.target.classList.contains('circle')) {
+    let size = parseInt(e.target.getAttribute('data-size'))
+    multiplier = determineMultiplier(size)
+    score = score + (1 * multiplier)
+    e.target.remove()
+    randomeCircle()
+  }
+})
+
+function startGame() {
+  screens[1].classList.add('up')
+
+  setInterval(decreaseTime, 1000)
+  setTime(time)
+  randomeCircle()
+}
+
+function startNewGame() {
+  score = 0
+  finish = 0
+  time = selectedTime
+  setTime(selectedTime)
+
+  timeCounter.parentNode.classList.remove('hide')
+  newGameButton.classList.add('hide')
+
+  board.innerHTML = ''
+  randomeCircle()
+}
+
+function finishGame() {
+  board.innerHTML = `<h1>Счет: <span class="primary">${score}</span></h1>`
+  timeCounter.parentNode.classList.add('hide')
+  newGameButton.classList.remove('hide')
+  finish = 1
+}
+
+function randomeCircle() {
+  if( ! finish) {
+    const circle = document.createElement('div')
+    const size = getRandomeNumber(10, 50)
+    const {width, height} = board.getBoundingClientRect()
+    const x = getRandomeNumber(0, width - size)
+    const y = getRandomeNumber(0, height - size)
+
+    circle.setAttribute('data-size', size)
+    circle.classList.add('circle')
+    let color = getRandomColor()
+
+    circle.style.background = color
+    circle.style.width = `${size}px`
+    circle.style.height = `${size}px`
+    circle.style.top = `${y}px`
+    circle.style.left = `${x}px`
+
+    board.append(circle)
+
+    if( ! timer) {
+      timer = 1
+      let timeout = getRandomeNumber(1000, 1500)
+      console.log(timeout)
+      setTimeout(newCircle, timeout)
+    }
+  }
+}
+
+function newCircle() {
+  timer = 0
+  if( ! finish) {
+    board.innerHTML = ''
+    randomeCircle()
+  }
+}
+
+function decreaseTime() {
+  if(time === 0) {
+    finishGame()
+  } else {
+    let current = --time
+    if(current < 10) {
+      current = `0${current}`
+    }
+    setTime(current)
+  }
+}
+
+function determineMultiplier(num) {
+  if(num < 15) return 3
+  if(num < 20) return 2
+  return 1
+}
+
+function setTime(time) {
+  timeCounter.innerHTML = `00:${time}`
+}
+
+function getRandomeNumber(min, max) {
+  return Math.round(Math.random() * (max - min) + min)
+}
+
+function getRandomColor() {
+  const index = Math.floor(Math.random() * colors.length)
+
+  return colors[index]
+}
+
+
+
+@import url('https://fonts.googleapis.com/css?family=Khula&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: #fff;
+  font-family: 'Khula', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-weight: 100;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #16D9E3;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.start {
+  font-size: 1.5rem;
+}
+
+#new-game {
+  margin-top: 10px;
+}
+
+h1 {
+  line-height: 1.4;
+  font-size: 4rem;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  transition: margin 0.5s ease-out;
+  background: #29323C;
+}
+
+.screen.up {
+  margin-top: -100vh;
+}
+
+.time-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+}
+
+.time-list li {
+  margin: 10px;
+}
+
+.time-btn {
+  background-color: transparent;
+  border: 2px solid #C0C0C0;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  padding: .5rem 1rem;
+  font-size: 1.5rem;
+}
+
+.time-btn:hover {
+  border: 2px solid #16D9E3;
+  color: #16D9E3;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.primary {
+  color: #16D9E3;
+}
+
+.board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 500px;
+  height: 500px;
+  background: #353f4a;
+  box-shadow: 1px 1px 1px #485563;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.circle {
+  background: linear-gradient(90deg, #16D9E3 0%, #30C7EC 47%, #46AEF7 100%);
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.circle:before {
+  content: '';
+    width: 120%;
+    height: 1px;
+    background: #fff;
+    transform: rotate(90deg);
+    position: absolute;
+    left: -9%;
+    top: 49%;
+}
+
+.circle:after {
+  content: '';
+    width: 120%;
+    height: 1px;
+    background: #fff;
+    position: absolute;
+    left: -7%;
+    top: 49%;
+}
+
+
