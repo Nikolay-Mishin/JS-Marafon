@@ -28,7 +28,9 @@ const w = 2000,
 		}
 	]
 
-const slidesPlugin = (slides = 2) => {
+slidesPlugin(data.length)
+
+function slidesPlugin (slides = 2) {
 	if (slides < 2) throw new Error('slidesCount could not be < 2')
 	
 	const sidebar = document.querySelector('.sidebar'),
@@ -96,5 +98,3 @@ const slidesPlugin = (slides = 2) => {
 		console.log(key)
 	})
 }
-
-slidesPlugin(data.length)

@@ -12,33 +12,6 @@ const filter = (obj, cb) => [].filter.call(obj, cb),
 register(placeholders, 'filter', function (cb) { return filter(this, cb) }) // NodeList
 register(placeholders, 'clearClasses', function (...classList) { return clearClasses(this, ...classList) })
 
-const dragstart = ({ target }) => {
-		target.classList.add('hold')
-		setTimeout(() => target.classList.add('hide'), 0)
-	},
-	dragend = ({ target }) => {
-		//target.classList.remove('hold', 'hide')
-		target.className = 'item'
-	},
-	dragover = event => {
-		event.preventDefault()
-		placeholders.filter(placeholder => !placeholder.isEqualNode(event.target))
-			.forEach(placeholder => placeholder.classList.add('drop'))
-	},
-	dragenter = ({ target }) => {
-		target.classList.add('hovered')
-		target.classList.remove('drop')
-	},
-	dragleave = ({ target }) => {
-		target.classList.remove('hovered')
-		target.classList.add('drop')
-	},
-	drop = ({ target }) => {
-		target.classList.remove('hovered')
-		placeholders.clearClasses('drop')
-		target.append(item)
-	}
-
 item.addEventListener('dragstart', dragstart)
 item.addEventListener('dragend', dragend)
 
@@ -48,3 +21,37 @@ placeholders.forEach(placeholder => {
 	placeholder.addEventListener('dragleave', dragleave)
 	placeholder.addEventListener('drop', drop)
 })
+
+function dragstart({ target }) {
+	target.classList.add('hold')
+	setTimeout(() => target.classList.add('hide'), 0)
+}
+
+function dragend({ target }) {
+	//target.classList.remove('hold', 'hide')
+	target.className = 'item'
+}
+
+function dragover(event) {
+	event.preventDefault()
+	placeholders.filter(placeholder => !placeholder.isEqualNode(event.target))
+		.forEach(placeholder => placeholder.classList.add('drop'))
+}
+
+function dragenter({ target }) {
+	target.classList.add('hovered')
+	target.classList.remove('drop')
+}
+
+function dragleave({ target }) {
+	target.classList.remove('hovered')
+	target.classList.add('drop')
+}
+
+function drop({ target }) {
+	target.classList.remove('hovered')
+	placeholders.clearClasses('drop')
+	target.append(item)
+}
+
+

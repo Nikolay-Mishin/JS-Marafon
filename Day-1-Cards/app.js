@@ -12,11 +12,12 @@ const filter = (obj, cb) => [].filter.call(obj, cb),
 register(containers, 'filter', function (cb) { return filter(this, cb) })
 register(containers, 'clearClasses', function (...classList) { return clearClasses(this, ...classList) })
 
-const slidesPlugin = (activeSlide = 0) => {
-	const container = document.querySelector('.container'),
-		slides = document.querySelectorAll('.slide')
+slidesPlugin(3)
 
-	const w = 800,
+function slidesPlugin(activeSlide = 0) {
+	const container = document.querySelector('.container'),
+		slides = document.querySelectorAll('.slide'),
+		w = 800,
 		data = [
 			{
 				url: '1628107073262-e086371689a6'
@@ -63,5 +64,3 @@ const slidesPlugin = (activeSlide = 0) => {
 		}
 	})
 }
-
-slidesPlugin(3)
