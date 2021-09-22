@@ -56,32 +56,25 @@ function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize =
 			const square = document.createElement('div')
 			square.classList.add('square')
 			if (!square.offsetWidth) square.style.width = square.style.height = `${this.squareSize}px`
-			square.addEventListener('mouseover', () => setColor(square)) // наведение мыши на квадрат и назначение цвета
-			square.addEventListener('mouseleave', () => removeColor(square)) // удаляем цвет и возвращаем базовый при убирание мыши
+			square.addEventListener('mouseover', () => setColor) // наведение мыши на квадрат и назначение цвета
+			square.addEventListener('mouseleave', () => removeColor) // удаляем цвет и возвращаем базовый при убирание мыши
 			this.board.append(square)
 		}
 	}
 
-	const setColor = square => {
+	const setColor = ({ target }) => {
 		const { hex, r, g, b, a } = getRandomColor(), // получаем цвет
 			color = hex ? hex : `rgba(${r}, ${g}, ${b}, ${a})`
-		// передаем параметр, вместо фиксированного цвета
-		square.style.background = color
-		square.style.boxShadow = `0 0 2px ${color}, 0 0 10px ${color}` // делаем цвета более объемными и делаем свечение
+		target.style.background = color // передаем параметр, вместо фиксированного цвета
+		target.style.boxShadow = `0 0 2px ${color}, 0 0 10px ${color}` // делаем цвета более объемными и делаем свечение
 	}
 
-	const removeColor = square => {
-		square.style.background = this.bgSquareColor // возвращаем изначальный цвет квадрату
-		square.style.boxShadow = `0 0 2px ${this.shadowSquareColor}`
+	const removeColor = ({ target }) => {
+		target.style.background = this.bgSquareColor // возвращаем изначальный цвет квадрату
+		target.style.boxShadow = `0 0 2px ${this.shadowSquareColor}`
 	}
 
 	const getRandomColor = () => {
-		/* 
-		Math.floor - округление в меньшую сторону
-		Math.random - выдает рандомную строчку
-		colors.length - получаем длину массива
-		return colors[index] - возвращаем массив colors и динамический индекс [index], который мы получили
-		*/
 		return this.colors.length > 0 ? { hex: this.colors[Math.floor(Math.random() * this.colors.length)] } :
 			{
 				r: Math.floor(Math.random() * 255),
