@@ -21,8 +21,8 @@ body {
 }
 
 .square {
-	height: 16px;
-	width: 16px;
+	/*height: 16px;*/
+	/*width: 16px;*/
 	background: #1d1d1d;
 	margin: 2px;
 	box-shadow: 0 0 2px #000;
