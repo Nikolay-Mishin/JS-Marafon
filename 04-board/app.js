@@ -2,14 +2,13 @@ const computedStyle = el => el.currentStyle || getComputedStyle(el, ''), // IE |
 	colors = ['#5141ba', '#bd2c1c', '#5acaf2', '#e9fc12', '#24b561', '#0d4375', '#75450d']
 
 const board = new boardPlugin({ /*colors, */squareSize: 20 })
-
 board.init({ squares: 600, w: 600 })
 
 console.log(board)
 
 function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize = 0, colors = [], transparency = false, bgSquareColor = '#1d1d1d', shadowSquareColor = '#000' } = {}) {
 	if (!(this instanceof boardPlugin)) throw new Error('boardPlugin could be instanceof boardPlugin')
-	
+
 	this.init = ({ board, w, h, squares, squareSize, colors, transparency, bgSquareColor, shadowSquareColor } = {}) => {
 		this.board = this.board || document.querySelector(board)
 		this.w = w || this.w
@@ -28,17 +27,18 @@ function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize =
 		square.classList.add('square')
 		this.board.append(square)
 
-		if (square.offsetWidth !== square.offsetHeight) {
+		const { width, height } = square.getBoundingClientRect()
+
+		if (width !== height) {
 			throw new Error('Width and height of square could be equal')
+		}
+		else if (!(this.squareSize || width)) {
+			throw new Error('Size of square could be > 0')
 		}
 
 		const squareStyles = computedStyle(square)
 
-		if (!(this.squareSize || square.offsetWidth)) {
-			throw new Error('Size of square could be > 0')
-		}
-
-		this.squareSize = this.squareSize ? this.squareSize : square.offsetWidth
+		this.squareSize = this.squareSize ? this.squareSize : width
 		this.squareCellSize = this.squareSize + parseInt(squareStyles.margin) * 2
 
 		this.board.removeChild(square)
@@ -56,8 +56,8 @@ function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize =
 			const square = document.createElement('div')
 			square.classList.add('square')
 			if (!square.offsetWidth) square.style.width = square.style.height = `${this.squareSize}px`
-			square.addEventListener('mouseover', () => setColor) // наведение мыши на квадрат и назначение цвета
-			square.addEventListener('mouseleave', () => removeColor) // удаляем цвет и возвращаем базовый при убирание мыши
+			square.addEventListener('mouseover', setColor) // наведение мыши на квадрат и назначение цвета
+			square.addEventListener('mouseleave', removeColor) // удаляем цвет и возвращаем базовый при убирание мыши
 			this.board.append(square)
 		}
 	}
