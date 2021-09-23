@@ -1,22 +1,3 @@
-const { log } = console,
-	error = msg => { throw new Error(msg) },
-	getStyles = el => el.currentStyle || getComputedStyle(el, ''), // IE || другой браузер
-	get = (el, target = document) => target.querySelector(el),
-	getAll = (el, target = document) => target.querySelectorAll(el),
-	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
-	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
-	create = (el = 'div') => document.createElement(el),
-	getRect = (el = document) => el.getBoundingClientRect(),
-	filter = (obj, cb) => [].filter.call(obj, cb),
-	register = (obj, prop, value) => obj.__proto__[prop] = value,
-	clearClasses = function (target, ...classList) {
-		target.filter(placeholder => {
-			let contains = false;
-			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true });
-			return contains;
-		}).forEach(placeholder => placeholder.classList.remove(classList))
-	}
-
 const colors = ['#5141ba', '#bd2c1c', '#5acaf2', '#e9fc12', '#24b561', '#0d4375', '#75450d']
 
 const board = new boardPlugin({ /*colors, */squareSize: 20 })

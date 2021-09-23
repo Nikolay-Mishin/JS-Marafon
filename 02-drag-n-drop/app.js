@@ -1,17 +1,3 @@
-const { log } = console,
-	get = (el, target = document) => target.querySelector(el),
-	getAll = (el, target = document) => target.querySelectorAll(el),
-	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb)
-	filter = (obj, cb) => [].filter.call(obj, cb),
-	register = (obj, prop, value) => obj.__proto__[prop] = value,
-	clearClasses = function (target, ...classList) {
-		target.filter(placeholder => {
-			let contains = false;
-			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true });
-			return contains;
-		}).forEach(placeholder => placeholder.classList.remove(classList))
-	}
-
 const item = get('.item'),
 	placeholders = getAll('.placeholder')
 	

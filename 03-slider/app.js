@@ -1,9 +1,3 @@
-const { log } = console,
-	get = (el, target = document) => target.querySelector(el),
-	getAll = (el, target = document) => target.querySelectorAll(el),
-	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
-	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html)
-
 const w = 2000,
 	desc = 'History & Travel',
 	data = [
