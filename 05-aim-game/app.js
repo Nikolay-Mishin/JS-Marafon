@@ -5,7 +5,7 @@ const { log } = console,
 	getAll = (el, target = document) => target.querySelectorAll(el),
 	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
 	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
-	create = el => document.createElement(el),
+	create = (el = 'div') => document.createElement(el),
 	getRect = (el = document) => el.getBoundingClientRect(),
 	filter = (obj, cb) => [].filter.call(obj, cb),
 	register = (obj, prop, value) => obj.__proto__[prop] = value,
@@ -127,7 +127,7 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 	}
 
 	const createRandomCircle = () => {
-		const circle = create('div')
+		const circle = create()
 		const size = getRandomNumber(this.minSize, this.maxSize)
 		// через деструктуризацию задаем рандомное положение кружка
 		const { width, height } = getRect(this.board)

@@ -5,7 +5,7 @@ const { log } = console,
 	getAll = (el, target = document) => target.querySelectorAll(el),
 	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
 	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
-	create = el => document.createElement(el),
+	create = (el = 'div') => document.createElement(el),
 	getRect = (el = document) => el.getBoundingClientRect(),
 	filter = (obj, cb) => [].filter.call(obj, cb),
 	register = (obj, prop, value) => obj.__proto__[prop] = value,
@@ -41,7 +41,7 @@ function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize =
 		if (this.board.childNodes.length > 0) this.board.innerHTML = ''
 		this.board.style['max-width'] = `${this.w}px`
 
-		const square = create('div')
+		const square = create()
 		square.classList.add('square')
 		this.board.append(square)
 
@@ -71,7 +71,7 @@ function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize =
 
 	const run = () => {
 		for (let i = 0; i < this.squares; i++) {
-			const square = create('div')
+			const square = create()
 			square.classList.add('square')
 			if (!square.offsetWidth) square.style.width = square.style.height = `${this.squareSize}px`
 			addEvent(square, 'mouseover', setColor) // наведение мыши на квадрат и назначение цвета
