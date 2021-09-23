@@ -1,4 +1,5 @@
-const get = el => document.querySelector(el),
+const { log } = console,
+	get = el => document.querySelector(el),
 	getAll = el => document.querySelectorAll(el),
 	create = el => document.createElement(el)
 
@@ -6,21 +7,13 @@ const colors = ['#5141ba', '#bd2c1c', '#5acaf2', '#e9fc12', '#24b561', '#0d4375'
 
 const game = new aimGame({ minSize: 5, maxSize: 80, message: 'GameOver', boardW: 600, boardH: 600, timerList: [10, 20, 30, 40, 50, 60] })
 
-console.log(game)
+log(game)
 
 function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list', timeEl = '#time', board = '#board', timeBtn = 'time-btn', circle = 'circle', colors = [], ping = 1000, minSize = 10, maxSize = 60, message = 'Счет', boardW, boardH, timerList = [10, 20, 30] } = {}) {
 	if (!(this instanceof aimGame)) throw new Error('aimGame could be instanceof aimGame')
 
 	let time = 0
 	let score = 0
-
-	this.winTheGame = () => {
-		const kill = () => {
-			const circle = get('circle')
-			if (circle) circle.click()
-		}
-		setInterval(kill, 75)
-	}
 
 	this.init = ({ start, screen, timeList, timeEl, board, timeBtn, circle, colors, ping, minSize, maxSize, message, boardW, boardH, timerList } = {}) => {
 		this.startBtn = get(start)
@@ -57,6 +50,14 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 	}
 
 	this.init({ start, screen, timeList, timeEl, board, timeBtn, circle, colors, ping, minSize, maxSize, message, boardW, boardH, timerList })
+
+	this.winTheGame = () => {
+		const kill = () => {
+			const circle = get(`.${this.circle}`)
+			circle ? circle.click() : clearInterval(kill.timerId)
+		}
+		kill.timerId = setInterval(kill, 75)
+	}
 
 	this.startBtn.addEventListener('click', (event) => {
 		event.preventDefault() // отменяем поведение a по умолчанию

@@ -24,7 +24,7 @@ placeholders.forEach(placeholder => {
 
 function dragstart({ target }) {
 	target.classList.add('hold')
-	setTimeout(() => target.classList.add('hide'), 0)
+	setTimeout(() => target.classList.add('hide'))
 }
 
 function dragend({ target }) {
