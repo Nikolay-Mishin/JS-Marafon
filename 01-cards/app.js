@@ -1,4 +1,8 @@
-const filter = (obj, cb) => [].filter.call(obj, cb),
+const { log } = console,
+	get = (el, target = document) => target.querySelector(el),
+	getAll = (el, target = document) => target.querySelectorAll(el),
+	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
+	filter = (obj, cb) => [].filter.call(obj, cb),
 	register = (obj, prop, value) => obj.__proto__[prop] = value,
 	clearClasses = function (target, ...classList) {
 		target.filter(placeholder => {
@@ -6,8 +10,9 @@ const filter = (obj, cb) => [].filter.call(obj, cb),
 			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true });
 			return contains;
 		}).forEach(placeholder => placeholder.classList.remove(classList))
-	},
-	containers = document.querySelectorAll('.container')
+	}
+
+const containers = getAll('.container')
 
 register(containers, 'filter', function (cb) { return filter(this, cb) })
 register(containers, 'clearClasses', function (...classList) { return clearClasses(this, ...classList) })
@@ -15,8 +20,8 @@ register(containers, 'clearClasses', function (...classList) { return clearClass
 slidesPlugin(3)
 
 function slidesPlugin(activeSlide = 0) {
-	const container = document.querySelector('.container'),
-		slides = document.querySelectorAll('.slide'),
+	const container = get('.container'),
+		slides = getAll('.slide'),
 		w = 800,
 		data = [
 			{
@@ -55,9 +60,9 @@ function slidesPlugin(activeSlide = 0) {
 		slide.setAttribute('style', `background-image: url('https://images.unsplash.com/photo-${data[i].url}?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=${data[i].w || w}&q=80');`)
 	})
 
-	container.addEventListener('click', ({ target }) => {
+	addEvent(container, 'click', ({ target }) => {
 		if ((slide = target.classList.contains('slide')) || target.parentNode.classList.contains('slide')) {
-			//container.querySelector('.active').classList.remove('active')
+			//get('.active', container).classList.remove('active')
 			slides.clearClasses('active')
 			slide = slide ? target : target.parentNode
 			slide.classList.add('active')

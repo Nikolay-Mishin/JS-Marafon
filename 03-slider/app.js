@@ -1,3 +1,9 @@
+const { log } = console,
+	get = (el, target = document) => target.querySelector(el),
+	getAll = (el, target = document) => target.querySelectorAll(el),
+	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
+	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html)
+
 const w = 2000,
 	desc = 'History & Travel',
 	data = [
@@ -33,15 +39,15 @@ slidesPlugin(data.length)
 function slidesPlugin (slides = 2) {
 	if (slides < 2) throw new Error('slidesCount could not be < 2')
 	
-	const sidebar = document.querySelector('.sidebar'),
-		controls = document.querySelector('.controls'),
-		container = document.querySelector('.container'),
-		mainSlide = document.querySelector('.main-slide')
+	const sidebar = get('.sidebar'),
+		controls = get('.controls'),
+		container = get('.container'),
+		mainSlide = get('.main-slide')
 
 	let sidebarHtml = '',
 		slidesHtml = ''
 
-	data.slice(0, slides - 1).forEach((slide, i) => {
+	data.slice(0, slides).forEach((slide, i) => {
 		slidesHtml += '<div></div>'
 		sidebarHtml += `<div>
 			<h1>${data[slides - 1 - i].title}</h1>
@@ -49,12 +55,13 @@ function slidesPlugin (slides = 2) {
 		</div>`
 	})
 	
-	sidebar.insertAdjacentHTML('beforeend', sidebarHtml)
-	mainSlide.insertAdjacentHTML('beforeend', slidesHtml)
+	setHtml(sidebar, 'beforeend', sidebarHtml)
+	setHtml(mainSlide, 'beforeend', slidesHtml)
 
-	const sidebarSlides = sidebar.querySelectorAll('div'),
-		mainSlides = mainSlide.querySelectorAll('div'),
+	const sidebarSlides = getAll('div', sidebar),
+		mainSlides = getAll('div', mainSlide),
 		slidesCount = mainSlides.length
+
 	let activeSlideIndex = 0
 
 	const changeSlide = (direction) => {
@@ -82,19 +89,18 @@ function slidesPlugin (slides = 2) {
 
 	sidebar.style.top = `-${(slidesCount - 1) * 100}vh`
 
-	controls.addEventListener('click', ({ target }) => {
+	addEvent(controls, 'click', ({ target }) => {
 		if (action = target.dataset.action || target.parentNode.dataset.action) {
 			changeSlide(action)
 		}
 	})
 
-	document.addEventListener('keydown', ({ key }) => {
+	addEvent('', 'keydown', ({ key }) => {
 		if (key === 'ArrowUp') {
 			changeSlide('up')
 		}
 		else if (key === 'ArrowDown') {
 			changeSlide('down')
 		}
-		console.log(key)
 	})
 }

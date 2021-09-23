@@ -1,16 +1,34 @@
-const computedStyle = el => el.currentStyle || getComputedStyle(el, ''), // IE || другой браузер
-	colors = ['#5141ba', '#bd2c1c', '#5acaf2', '#e9fc12', '#24b561', '#0d4375', '#75450d']
+const { log } = console,
+	error = msg => { throw new Error(msg) },
+	getStyles = el => el.currentStyle || getComputedStyle(el, ''), // IE || другой браузер
+	get = (el, target = document) => target.querySelector(el),
+	getAll = (el, target = document) => target.querySelectorAll(el),
+	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
+	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
+	create = el => document.createElement(el),
+	getRect = (el = document) => el.getBoundingClientRect(),
+	filter = (obj, cb) => [].filter.call(obj, cb),
+	register = (obj, prop, value) => obj.__proto__[prop] = value,
+	clearClasses = function (target, ...classList) {
+		target.filter(placeholder => {
+			let contains = false;
+			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true });
+			return contains;
+		}).forEach(placeholder => placeholder.classList.remove(classList))
+	}
+
+const colors = ['#5141ba', '#bd2c1c', '#5acaf2', '#e9fc12', '#24b561', '#0d4375', '#75450d']
 
 const board = new boardPlugin({ /*colors, */squareSize: 20 })
 board.init({ squares: 600, w: 600 })
 
-console.log(board)
+log(board)
 
 function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize = 0, colors = [], transparency = false, bgSquareColor = '#1d1d1d', shadowSquareColor = '#000' } = {}) {
-	if (!(this instanceof boardPlugin)) throw new Error('boardPlugin could be instanceof boardPlugin')
+	if (!(this instanceof boardPlugin)) error('boardPlugin could be instanceof boardPlugin')
 
 	this.init = ({ board, w, h, squares, squareSize, colors, transparency, bgSquareColor, shadowSquareColor } = {}) => {
-		this.board = this.board || document.querySelector(board)
+		this.board = this.board || get(board)
 		this.w = w || this.w
 		this.h = h || this.h
 		this.squares = squares || this.squares
@@ -23,20 +41,20 @@ function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize =
 		if (this.board.childNodes.length > 0) this.board.innerHTML = ''
 		this.board.style['max-width'] = `${this.w}px`
 
-		const square = document.createElement('div')
+		const square = create('div')
 		square.classList.add('square')
 		this.board.append(square)
 
-		const { width, height } = square.getBoundingClientRect()
+		const { width, height } = getRect(square)
 
 		if (width !== height) {
-			throw new Error('Width and height of square could be equal')
+			error('Width and height of square could be equal')
 		}
 		else if (!(this.squareSize || width)) {
-			throw new Error('Size of square could be > 0')
+			error('Size of square could be > 0')
 		}
 
-		const squareStyles = computedStyle(square)
+		const squareStyles = getStyles(square)
 
 		this.squareSize = this.squareSize ? this.squareSize : width
 		this.squareCellSize = this.squareSize + parseInt(squareStyles.margin) * 2
@@ -53,11 +71,11 @@ function boardPlugin({ board = '#board', w = 400, h, squares = 500, squareSize =
 
 	const run = () => {
 		for (let i = 0; i < this.squares; i++) {
-			const square = document.createElement('div')
+			const square = create('div')
 			square.classList.add('square')
 			if (!square.offsetWidth) square.style.width = square.style.height = `${this.squareSize}px`
-			square.addEventListener('mouseover', setColor) // наведение мыши на квадрат и назначение цвета
-			square.addEventListener('mouseleave', removeColor) // удаляем цвет и возвращаем базовый при убирание мыши
+			addEvent(square, 'mouseover', setColor) // наведение мыши на квадрат и назначение цвета
+			addEvent(square, 'mouseleave', removeColor) // удаляем цвет и возвращаем базовый при убирание мыши
 			this.board.append(square)
 		}
 	}

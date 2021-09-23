@@ -1,21 +1,35 @@
 const { log } = console,
-	get = el => document.querySelector(el),
-	getAll = el => document.querySelectorAll(el),
-	create = el => document.createElement(el)
+	error = msg => { throw new Error(msg) },
+	getStyles = el => el.currentStyle || getComputedStyle(el, ''), // IE || другой браузер
+	get = (el, target = document) => target.querySelector(el),
+	getAll = (el, target = document) => target.querySelectorAll(el),
+	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
+	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
+	create = el => document.createElement(el),
+	getRect = (el = document) => el.getBoundingClientRect(),
+	filter = (obj, cb) => [].filter.call(obj, cb),
+	register = (obj, prop, value) => obj.__proto__[prop] = value,
+	clearClasses = function (target, ...classList) {
+		target.filter(placeholder => {
+			let contains = false;
+			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true });
+			return contains;
+		}).forEach(placeholder => placeholder.classList.remove(classList))
+	}
 
 const colors = ['#5141ba', '#bd2c1c', '#5acaf2', '#e9fc12', '#24b561', '#0d4375', '#75450d']
 
-const game = new aimGame({ minSize: 5, maxSize: 80, message: 'GameOver', boardW: 600, boardH: 600, timerList: [10, 20, 30, 40, 50, 60] })
+const game = new aimGame({ minSize: 5, maxSize: 80, msg: 'GameOver', boardW: 600, boardH: 600, timerList: [10, 20, 30, 40, 50, 60] })
 
 log(game)
 
-function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list', timeEl = '#time', board = '#board', timeBtnClass = 'time-btn', circleClass = 'circle', colors = [], ping = 1000, minSize = 10, maxSize = 60, message = 'Счет', boardW, boardH, timerList = [10, 20, 30] } = {}) {
-	if (!(this instanceof aimGame)) throw new Error('aimGame could be instanceof aimGame')
+function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list', timeEl = '#time', board = '#board', timeBtnClass = 'time-btn', circleClass = 'circle', colors = [], ping = 1000, minSize = 10, maxSize = 60, msg = 'Счет', boardW, boardH, timerList = [10, 20, 30] } = {}) {
+	if (!(this instanceof aimGame)) error('aimGame could be instanceof aimGame')
 
 	let time = 0
 	let score = 0
 
-	this.init = ({ start, screen, timeList, timeEl, board, timeBtnClass, circleClass, colors, ping, minSize, maxSize, message, boardW, boardH, timerList } = {}) => {
+	this.init = ({ start, screen, timeList, timeEl, board, timeBtnClass, circleClass, colors, ping, minSize, maxSize, msg, boardW, boardH, timerList } = {}) => {
 		this.startBtn = get(start)
 		this.screens = getAll(screen)
 		this.timeList = get(timeList)
@@ -28,7 +42,7 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 		this.ping = ping
 		this.minSize = minSize
 		this.maxSize = maxSize
-		this.message = message
+		this.msg = msg
 		this.boardW = boardW
 		this.boardH = boardH
 
@@ -45,11 +59,11 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 				</button>
 			</li>`)
 
-			this.timeList.insertAdjacentHTML('beforeend', timeHtml)
+			setHtml(this.timeList, 'beforeend', timeHtml)
 		}
 	}
 
-	this.init({ start, screen, timeList, timeEl, board, timeBtnClass, circleClass, colors, ping, minSize, maxSize, message, boardW, boardH, timerList })
+	this.init({ start, screen, timeList, timeEl, board, timeBtnClass, circleClass, colors, ping, minSize, maxSize, msg, boardW, boardH, timerList })
 
 	this.winTheGame = () => {
 		const kill = () => {
@@ -59,12 +73,12 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 		kill.timerId = setInterval(kill, 75)
 	}
 
-	this.startBtn.addEventListener('click', (event) => {
+	addEvent(this.startBtn, 'click', event => {
 		event.preventDefault() // отменяем поведение a по умолчанию
 		this.screens[0].classList.add('up') // показываем следующий экран
 	})
 
-	this.timeList.addEventListener('click', ({ target }) => {
+	addEvent(this.timeList, 'click', ({ target }) => {
 		// мы добавили addEventListener на весь блок списка, а нам необходимо слушать событие только по одной кнопки
 		// делаем через делегирование событий 
 		// contains - позволяет проверить, содержит ли один элемент внутри себя другой
@@ -109,14 +123,14 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 
 	const finishGame = () => {
 		this.timeEl.parentNode.classList.add('hide')
-		this.board.innerHTML = `<h1>${this.message}: <span class="primary"> ${score}</span><h1>`
+		this.board.innerHTML = `<h1>${this.msg}: <span class="primary"> ${score}</span><h1>`
 	}
 
 	const createRandomCircle = () => {
 		const circle = create('div')
 		const size = getRandomNumber(this.minSize, this.maxSize)
 		// через деструктуризацию задаем рандомное положение кружка
-		const { width, height } = this.board.getBoundingClientRect()
+		const { width, height } = getRect(this.board)
 		const x = getRandomNumber(0, width - size)
 		const y = getRandomNumber(0, height - size)
 		const { hex, r, g, b, a } = getRandomColor(), // получаем цвет
