@@ -23,7 +23,7 @@ const { log } = console,
 			desc = assign(descDefault, value ? { value, writable } : { get, set });
 		return hasOwn(obj, prop) ? value : Object.defineProperty(obj, prop, desc);
 	},
-	getProto = (obj, i = 0) => protoList(obj, i)
+	getProto = (obj, i = 0) => protoList(obj, i),
 	protoList = (function _protoList(obj) {
 		const proto = obj ? obj.__proto__ : null;
 		this.objProto = this.objProto || proto;
@@ -39,3 +39,6 @@ const { log } = console,
 			return protoList;
 		}
 	}).bind({})
+
+register(getHtmlAll(), 'filter', function (cb) { return filter(this, cb) })
+register(getHtmlAll(), 'clearClasses', function (...classList) { return clearClasses(this, ...classList) })

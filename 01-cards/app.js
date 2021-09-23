@@ -1,6 +1,3 @@
-register(getHtmlAll(), 'filter', function (cb) { return filter(this, cb) })
-register(getHtmlAll(), 'clearClasses', function (...classList) { return clearClasses(this, ...classList) })
-
 slidesPlugin(3)
 
 function slidesPlugin(activeSlide = 0) {
