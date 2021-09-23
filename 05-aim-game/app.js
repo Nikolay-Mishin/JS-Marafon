@@ -9,21 +9,21 @@ const game = new aimGame({ minSize: 5, maxSize: 80, message: 'GameOver', boardW:
 
 log(game)
 
-function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list', timeEl = '#time', board = '#board', timeBtn = 'time-btn', circle = 'circle', colors = [], ping = 1000, minSize = 10, maxSize = 60, message = 'Счет', boardW, boardH, timerList = [10, 20, 30] } = {}) {
+function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list', timeEl = '#time', board = '#board', timeBtnClass = 'time-btn', circleClass = 'circle', colors = [], ping = 1000, minSize = 10, maxSize = 60, message = 'Счет', boardW, boardH, timerList = [10, 20, 30] } = {}) {
 	if (!(this instanceof aimGame)) throw new Error('aimGame could be instanceof aimGame')
 
 	let time = 0
 	let score = 0
 
-	this.init = ({ start, screen, timeList, timeEl, board, timeBtn, circle, colors, ping, minSize, maxSize, message, boardW, boardH, timerList } = {}) => {
+	this.init = ({ start, screen, timeList, timeEl, board, timeBtnClass, circleClass, colors, ping, minSize, maxSize, message, boardW, boardH, timerList } = {}) => {
 		this.startBtn = get(start)
 		this.screens = getAll(screen)
 		this.timeList = get(timeList)
 		this.timeEl = get(timeEl)
 		this.board = get(board)
 
-		this.timeBtn = timeBtn
-		this.circle = circle
+		this.timeBtnClass = timeBtnClass
+		this.circleClass = circleClass
 		this.colors = colors
 		this.ping = ping
 		this.minSize = minSize
@@ -49,11 +49,11 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 		}
 	}
 
-	this.init({ start, screen, timeList, timeEl, board, timeBtn, circle, colors, ping, minSize, maxSize, message, boardW, boardH, timerList })
+	this.init({ start, screen, timeList, timeEl, board, timeBtnClass, circleClass, colors, ping, minSize, maxSize, message, boardW, boardH, timerList })
 
 	this.winTheGame = () => {
 		const kill = () => {
-			const circle = get(`.${this.circle}`)
+			const circle = get(`.${this.circleClass}`)
 			circle ? circle.click() : clearInterval(kill.timerId)
 		}
 		kill.timerId = setInterval(kill, 75)
@@ -69,17 +69,17 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 		// делаем через делегирование событий 
 		// contains - позволяет проверить, содержит ли один элемент внутри себя другой
 		// contains - у нас в примере метод проверяет, есть ли такой-то классс
-		if (target.classList.contains(this.timeBtn)) {
+		if (target.classList.contains(this.timeBtnClass)) {
 			// мы получаем строчку
 			// через функцию parseInt получаем число и записываем в переменную time
-			time = parseInt(target.getAttribute('data-time'))
+			time = parseInt(target.dataset.time)
 			this.screens[1].classList.add('up')
 			startGame()
 		}
 	})
 
 	this.board.addEventListener('click', ({ target }) => {
-		if (target.classList.contains(this.circle)) {
+		if (target.classList.contains(this.circleClass)) {
 			score++
 			target.remove()
 			createRandomCircle()
@@ -122,7 +122,7 @@ function aimGame({ start = '#start', screen = '.screen', timeList = '#time-list'
 		const { hex, r, g, b, a } = getRandomColor(), // получаем цвет
 			color = hex ? hex : `rgba(${r}, ${g}, ${b}, ${a})`
 
-		circle.classList.add('circle')
+		circle.classList.add(this.circleClass)
 		circle.style.width = `${size}px`
 		circle.style.height = `${size}px`
 		circle.style.left = `${x}px`
