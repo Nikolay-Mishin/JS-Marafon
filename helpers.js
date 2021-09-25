@@ -14,11 +14,11 @@ const { log } = console,
 		if (_) value._ = _
 		if (obj.__proto__ && !hasOwn(obj.__proto__, prop)) {
 			!def ? obj.__proto__[prop] = value :
-				define(obj.__proto__, prop, value, { enumerable, configurable, writable, get, set })
+				define(obj.__proto__, value, { prop, enumerable, configurable, writable, get, set })
 		}
 		return _ ? _ : value;
 	},
-	define = (obj, { value = null, prop = '', enumerable = true, configurable = false, writable = false, get, set } = {}) => {
+	define = (obj, value = null, { prop = '', enumerable = true, configurable = false, writable = false, get, set } = {}) => {
 		prop = prop || value.name;
 		return hasOwn(obj, prop) ? value :
 			Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }));
