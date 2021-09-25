@@ -16,10 +16,8 @@ const { log } = console,
 			}
 			return value
 		}
-		if (!objProto.hasOwn('_define')) {
-			Object.defineProperty(objProto, '_define', { value:
-				function _define(value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) { return define(this, ...arguments) } })
-		}
+		if (!objProto.hasOwn('_define')) Object.defineProperty(objProto, '_define', { value:
+			function _define(value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) { return define(this, ...arguments) } })
 		return define
 	})(),
 	register = (() => {
