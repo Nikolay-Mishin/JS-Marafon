@@ -1,7 +1,7 @@
 const { log } = console,
 	error = msg => { throw new Error(msg) },
 	{ assign } = Object,
-	objProto = Object.__proto__.__proto__,
+	objProto = {}.__proto__,
 	hasOwn = (() => {
 		if (!objProto.hasOwnProperty('hasOwn')) {
 			Object.defineProperty(objProto, 'hasOwn', { value: function hasOwn(prop) { return this.hasOwnProperty(prop) } })
@@ -100,7 +100,6 @@ log(html.classList)
 log(html.getAll('body'))
 
 log(objProto)
-log(protoList({}))
 
 log(getProto(nodeList))
 log(getProto(htmlEl))
