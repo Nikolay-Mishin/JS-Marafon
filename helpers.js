@@ -1,22 +1,21 @@
 const { log } = console,
 	error = msg => { throw new Error(msg) },
 	hasOwn = (obj, prop) => obj.hasOwnProperty(prop),
-	register = (obj, { value, prop, _, def = false, enumerable = true, configurable = false, writable = false, get, set } = {}) => {
-		//const func = {
-		//	[value.name]: function (...args) { log(this); log(args); log([value.name]); log([value.name]._); /*return [value.name]._(this, ...args)*/ }
-		//}
-		//func[value.name]._ = _
-		//log(func[value.name].name)
-		//log(func[value.name])
-		//log(func[value.name]._)
-		//func[value.name]()
-		prop = prop || value.name
-		if (_) value._ = _
+	register = (obj, { prop, value, func, def, enumerable = true, configurable = false, writable = false, get, set } = {}) => {
+		prop = prop || (value || func).name
+		if (value && func) value.func = func
+		else if (func) {
+			const _func = {
+				[prop]: function (...args) { log(this); return _func[prop].func(this, ...args) }
+			}
+			_func[prop].func = func
+			value = _func[prop]
+		}
 		if (obj.__proto__ && !hasOwn(obj.__proto__, prop)) {
 			!def ? obj.__proto__[prop] = value :
 				define(obj.__proto__, value, { prop, enumerable, configurable, writable, get, set })
 		}
-		return _ ? _ : value;
+		return func ? func : value;
 	},
 	define = (obj, value = null, { prop = '', enumerable = true, configurable = false, writable = false, get, set } = {}) => {
 		prop = prop || value.name
@@ -40,8 +39,14 @@ const { log } = console,
 		}
 	}).bind({}),
 	getAll = register(getProto(document.querySelectorAll('html')[0]), {
-		value: function getAll(el = 'html') { log(this); return getAll._(el, this) },
-		_: (el = 'html', target = document) => target.querySelectorAll(el)
+		func: function getAll(el = 'html', target = document) {
+			if (el instanceof HTMLElement) {
+				const _el = target
+				target = el
+				el = _el
+			}
+			return target.querySelectorAll(el)
+		}
 	}),
 	nodeList = getAll(),
 	html = nodeList[0],
@@ -53,12 +58,10 @@ const { log } = console,
 	create = (el = 'div') => document.createElement(el),
 	getRect = (el = document) => el.getBoundingClientRect(),
 	filter = register(nodeList, {
-		value: function filter(cb) { log(this); return filter._(this, cb) },
-		_: (obj, cb) => [].filter.call(obj, cb)
+		func: function filter(obj, cb) { return [].filter.call(obj, cb) }
 	}),
 	clearClasses = register(nodeList, {
-		value: function clearClasses(...classList) { log(this); return clearClasses._(this, ...classList) },
-		_: (target, ...classList) => {
+		func: function clearClasses(target, ...classList) {
 			target.filter(placeholder => {
 				let contains = false
 				classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true })
