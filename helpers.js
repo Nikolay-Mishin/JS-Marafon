@@ -1,27 +1,6 @@
 const { log } = console,
 	error = msg => { throw new Error(msg) },
-	hasOwn = (obj, prop) => obj.hasOwnProperty(prop),
-	register = (obj, { prop, value, func, def, enumerable = true, configurable = false, writable = false, get, set } = {}) => {
-		prop = prop || (value || func).name
-		if (value && func) value.func = func
-		else if (func) {
-			const _func = {
-				[prop]: function (...args) { log(this); return _func[prop].func(this, ...args) }
-			}
-			_func[prop].func = func
-			value = _func[prop]
-		}
-		if (obj.__proto__ && !hasOwn(obj.__proto__, prop)) {
-			!def ? obj.__proto__[prop] = value :
-				define(obj.__proto__, value, { prop, enumerable, configurable, writable, get, set })
-		}
-		return func ? func : value;
-	},
-	define = (obj, value = null, { prop = '', enumerable = true, configurable = false, writable = false, get, set } = {}) => {
-		prop = prop || value.name
-		return hasOwn(obj, prop) ? value :
-			Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }))
-	},
+	{ assign } = Object,
 	getProto = (obj, i = 0) => protoList(obj)[i],
 	protoList = (function protoList(obj) {
 		const proto = obj ? obj.__proto__ : null
@@ -38,6 +17,39 @@ const { log } = console,
 			return _protoList
 		}
 	}).bind({}),
+	objProto = getProto(Object, 1),
+	hasOwn = (obj, prop) => {
+		const hasOwn = (obj, prop) => obj.hasOwnProperty(prop)
+		if (!objProto.hasOwnProperty('hasOwn')) {
+			Object.defineProperty(objProto, 'hasOwn', { value: function (prop) { return hasOwn(this, prop) } })
+		}
+		return hasOwn(obj, prop);
+	},
+	define = (obj, value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) => {
+		prop = prop || value.name
+		if (!hasOwn(obj, prop)) {
+			Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }))
+		}
+		return value
+	},
+	register = define(objProto,
+		function register(obj, { prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
+			prop = prop || (value || func).name
+			if (value && func) value.func = func
+			else if (func) {
+				const _func = {
+					[prop]: function (...args) { log(this); return _func[prop].func(this, ...args) }
+				}
+				_func[prop].func = func
+				value = _func[prop]
+			}
+			if (obj.__proto__ && !hasOwn(obj.__proto__, prop)) {
+				!def ? obj.__proto__[prop] = value :
+					define(obj.__proto__, value, { prop, enumerable, configurable, writable, get, set })
+			}
+			return func ? func : value;
+		}
+	),
 	nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = getProto(html),
@@ -79,3 +91,11 @@ nodeList.clearClasses('active')
 log(html.classList)
 
 log(html.getAll('body'))
+
+log(objProto)
+
+log(protoList(nodeList))
+log(protoList(html))
+
+log(objProto.hasOwn('hasOwn'))
+log(getProto(nodeList).hasOwn('filter'))
