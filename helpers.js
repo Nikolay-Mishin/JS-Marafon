@@ -100,6 +100,7 @@ log(html.classList)
 log(html.getAll('body'))
 
 log(objProto)
+log(protoList({}))
 
 log(getProto(nodeList))
 log(getProto(htmlEl))
