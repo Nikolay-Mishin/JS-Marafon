@@ -19,24 +19,24 @@ const { log } = console,
 		return _ ? _ : value;
 	},
 	define = (obj, value = null, { prop = '', enumerable = true, configurable = false, writable = false, get, set } = {}) => {
-		prop = prop || value.name;
+		prop = prop || value.name
 		return hasOwn(obj, prop) ? value :
-			Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }));
+			Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }))
 	},
 	getProto = (obj, i = 0) => protoList(obj)[i],
 	protoList = (function protoList(obj) {
-		const proto = obj ? obj.__proto__ : null;
-		this.objProto = this.objProto || proto;
-		this.protoList = this.protoList || [];
+		const proto = obj ? obj.__proto__ : null
+		this.objProto = this.objProto || proto
+		this.protoList = this.protoList || []
 		if (proto) {
-			this.protoList.push(proto);
-			protoList.call(this, proto);
+			this.protoList.push(proto)
+			protoList.call(this, proto)
 		}
 		if (proto == this.objProto) {
-			const _protoList = this.protoList;
-			this.objProto = null;
-			this.protoList = [];
-			return _protoList;
+			const _protoList = this.protoList
+			this.objProto = null
+			this.protoList = []
+			return _protoList
 		}
 	}).bind({}),
 	getAll = register(getProto(document.querySelectorAll('html')[0]), {
@@ -60,9 +60,9 @@ const { log } = console,
 		value: function clearClasses(...classList) { log(this); return clearClasses._(this, ...classList) },
 		_: (target, ...classList) => {
 			target.filter(placeholder => {
-				let contains = false;
-				classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true });
-				return contains;
+				let contains = false
+				classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true })
+				return contains
 			}).forEach(placeholder => placeholder.classList.remove(classList))
 		}
 	})
