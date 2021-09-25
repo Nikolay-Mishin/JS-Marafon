@@ -4,26 +4,44 @@ const { log } = console,
 	objProto = Object.__proto__.__proto__,
 	hasOwn = (() => {
 		if (!objProto.hasOwnProperty('hasOwn')) {
-			Object.defineProperty(objProto, 'hasOwn', { value: function (prop) { return this.hasOwnProperty(prop) } })
+			Object.defineProperty(objProto, 'hasOwn', { value: function hasOwn(prop) { return this.hasOwnProperty(prop) } })
 		}
 		return (obj, prop) => obj.hasOwn(prop)
 	})(),
 	define = (() => {
-		const define = (obj, value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) => {
+		function define (obj, value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) {
 			prop = prop || value.name
 			if (!obj.hasOwn(prop)) {
 				Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }))
 			}
 			return value
 		}
-		if (!objProto.hasOwn('define')) {
-			Object.defineProperty(objProto, 'define', { value:
-				function (value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) {
-					return define(this, value, { prop, enumerable, configurable, writable, get, set })
-				}
-			})
+		if (!objProto.hasOwn('_define')) {
+			Object.defineProperty(objProto, '_define', { value:
+				function _define(value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) { return define(this, ...arguments) } })
 		}
 		return define
+	})(),
+	register = (() => {
+		function register(obj, { prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
+			prop = prop || (value || func).name
+			if (value && func) value.func = func
+			else if (func) {
+				const _func = {
+					[prop]: function (...args) { log(this); return _func[prop].func(this, ...args) }
+				}
+				_func[prop].func = func
+				value = _func[prop]
+			}
+			if (obj.__proto__ && !hasOwn(obj.__proto__, prop)) {
+				!def ? obj.__proto__[prop] = value :
+					obj.__proto__._define(value, { prop, enumerable, configurable, writable, get, set })
+			}
+			return func ? func : value
+		}
+		if (!objProto.hasOwn('register')) objProto._define(
+			function _register({ prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) { return register(this, ...arguments) })
+		return register
 	})(),
 	getProto = (obj, i = 0) => protoList(obj)[i],
 	protoList = (function protoList(obj) {
@@ -41,28 +59,10 @@ const { log } = console,
 			return _protoList
 		}
 	}).bind({}),
-	register = objProto.define(
-		function register(obj, { prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
-			prop = prop || (value || func).name
-			if (value && func) value.func = func
-			else if (func) {
-				const _func = {
-					[prop]: function (...args) { log(this); return _func[prop].func(this, ...args) }
-				}
-				_func[prop].func = func
-				value = _func[prop]
-			}
-			if (obj.__proto__ && !hasOwn(obj.__proto__, prop)) {
-				!def ? obj.__proto__[prop] = value :
-					define(obj.__proto__, value, { prop, enumerable, configurable, writable, get, set })
-			}
-			return func ? func : value;
-		}
-	),
 	nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = getProto(html),
-	getAll = register(htmlEl, {
+	getAll = htmlEl._register({
 		func: function getAll(el = 'html', target = document) {
 			if (el instanceof HTMLElement) {
 				const _el = target
@@ -78,10 +78,10 @@ const { log } = console,
 	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
 	create = (el = 'div') => document.createElement(el),
 	getRect = (el = document) => el.getBoundingClientRect(),
-	filter = register(nodeList, {
+	filter = nodeList._register({
 		func: function filter(obj, cb) { return [].filter.call(obj, cb) }
 	}),
-	clearClasses = register(nodeList, {
+	clearClasses = nodeList._register({
 		func: function clearClasses(target, ...classList) {
 			target.filter(placeholder => {
 				let contains = false
