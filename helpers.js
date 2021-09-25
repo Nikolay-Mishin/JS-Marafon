@@ -1,6 +1,30 @@
 const { log } = console,
 	error = msg => { throw new Error(msg) },
 	{ assign } = Object,
+	objProto = Object.__proto__.__proto__,
+	hasOwn = (() => {
+		if (!objProto.hasOwnProperty('hasOwn')) {
+			Object.defineProperty(objProto, 'hasOwn', { value: function (prop) { return this.hasOwnProperty(prop) } })
+		}
+		return (obj, prop) => obj.hasOwn(prop)
+	})(),
+	define = (() => {
+		const define = (obj, value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) => {
+			prop = prop || value.name
+			if (!obj.hasOwn(prop)) {
+				Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }))
+			}
+			return value
+		}
+		if (!objProto.hasOwn('define')) {
+			Object.defineProperty(objProto, 'define', { value:
+				function (value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) {
+					return define(this, value, { prop, enumerable, configurable, writable, get, set })
+				}
+			})
+		}
+		return define
+	})(),
 	getProto = (obj, i = 0) => protoList(obj)[i],
 	protoList = (function protoList(obj) {
 		const proto = obj ? obj.__proto__ : null
@@ -17,22 +41,7 @@ const { log } = console,
 			return _protoList
 		}
 	}).bind({}),
-	objProto = getProto(Object, 1),
-	hasOwn = (obj, prop) => {
-		const hasOwn = (obj, prop) => obj.hasOwnProperty(prop)
-		if (!objProto.hasOwnProperty('hasOwn')) {
-			Object.defineProperty(objProto, 'hasOwn', { value: function (prop) { return hasOwn(this, prop) } })
-		}
-		return hasOwn(obj, prop);
-	},
-	define = (obj, value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) => {
-		prop = prop || value.name
-		if (!hasOwn(obj, prop)) {
-			Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }))
-		}
-		return value
-	},
-	register = define(objProto,
+	register = objProto.define(
 		function register(obj, { prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
 			prop = prop || (value || func).name
 			if (value && func) value.func = func
@@ -94,8 +103,7 @@ log(html.getAll('body'))
 
 log(objProto)
 
-log(protoList(nodeList))
-log(protoList(html))
+log(getProto(nodeList))
+log(getProto(htmlEl))
 
-log(objProto.hasOwn('hasOwn'))
 log(getProto(nodeList).hasOwn('filter'))
