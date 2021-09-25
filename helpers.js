@@ -38,7 +38,10 @@ const { log } = console,
 			return _protoList
 		}
 	}).bind({}),
-	getAll = register(getProto(document.querySelectorAll('html')[0]), {
+	nodeList = document.querySelectorAll('html'),
+	html = nodeList[0],
+	htmlEl = getProto(html),
+	getAll = register(htmlEl, {
 		func: function getAll(el = 'html', target = document) {
 			if (el instanceof HTMLElement) {
 				const _el = target
@@ -48,9 +51,6 @@ const { log } = console,
 			return target.querySelectorAll(el)
 		}
 	}),
-	nodeList = getAll(),
-	html = nodeList[0],
-	htmlEl = getProto(html),
 	getStyles = el => el.currentStyle || getComputedStyle(el, ''), // IE || другой браузер
 	get = (el = 'html', target = document) => target.querySelector(el),
 	addEvent = (el, event, cb) => (el ? el : document).addEventListener(event, cb),
