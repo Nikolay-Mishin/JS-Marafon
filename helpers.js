@@ -77,10 +77,8 @@ const { log } = console,
 	addEvent = htmlEl._register({ addEvent(el, event, cb) { return (el ? el : document).addEventListener(event, cb) } }),
 	setHtml = htmlEl._register({ setHtml(target = '', pos = 'beforeend', html = '') {
 		return (target ? target : document).insertAdjacentHTML(pos, html) } }),
-	//setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
 	create = (el = 'div') => document.createElement(el),
 	getRect = htmlEl._register({ getRect(el = document) { return el.getBoundingClientRect() } }),
-	//getRect = (el = document) => el.getBoundingClientRect(),
 	filter = nodeList._register({ filter(obj, cb) { return [].filter.call(obj, cb) } }),
 	clearClasses = nodeList._register(function clearClasses(target, ...classList) {
 		target.filter(placeholder => {
