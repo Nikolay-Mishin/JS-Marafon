@@ -1,6 +1,7 @@
 const { log } = console,
 	error = msg => { throw new Error(msg) },
-	{ assign } = Object,
+	{ assign, keys } = Object,
+	{ from } = Array,
 	objProto = {}.__proto__,
 	hasOwn = (() => {
 		if (!objProto.hasOwnProperty('hasOwn')) {
@@ -9,33 +10,38 @@ const { log } = console,
 		return (obj, prop) => obj.hasOwn(prop)
 	})(),
 	define = (() => {
-		function define (obj, value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) {
+		function define(obj, value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) {
 			prop = prop || value.name
 			if (!obj.hasOwn(prop)) {
 				Object.defineProperty(obj, prop, assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable }))
 			}
 			return value
 		}
-		if (!objProto.hasOwn('_define')) Object.defineProperty(objProto, '_define', { value:
-			function _define(value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) { return define(this, ...arguments) } })
+		if (!objProto.hasOwn('_define')) Object.defineProperty(objProto, '_define', {
+			value:
+				function _define(value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) { return define(this, ...arguments) }
+		})
 		return define
 	})(),
 	register = (() => {
-		function register(obj, { prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
-			prop = prop || (value || func).name
-			if (value && func) value.func = func
-			else if (func) {
+		function register(obj, value, { prop, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
+			obj = obj.__proto__
+			value = value[keys(value).shift()] || value
+			prop = prop || value.name
+			if (func) value.func = func
+			else {
 				const _func = {
 					[prop]: function (...args) { log(this); return _func[prop].func(this, ...args) }
 				}
-				_func[prop].func = func
+				_func[prop].func = value
+				func = value
 				value = _func[prop]
 			}
-			if (obj.__proto__ && !hasOwn(obj.__proto__, prop)) {
-				!def ? obj.__proto__[prop] = value :
-					obj.__proto__._define(value, { prop, enumerable, configurable, writable, get, set })
+			if (obj && !obj.hasOwn(prop)) {
+				def || obj === objProto ? obj._define(value, { prop, enumerable, configurable, writable, get, set }) :
+					obj[prop] = value
 			}
-			return func ? func : value
+			return func
 		}
 		if (!objProto.hasOwn('register')) objProto._define(
 			function _register({ prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) { return register(this, ...arguments) })
@@ -60,15 +66,10 @@ const { log } = console,
 	nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = getProto(html),
-	getAll = htmlEl._register({
-		func: function getAll(el = 'html', target = document) {
-			if (el instanceof HTMLElement) {
-				const _el = target
-				target = el
-				el = _el
-			}
-			return target.querySelectorAll(el)
-		}
+	reverse = obj => from(obj).reverse(),
+	getAll = htmlEl._register(function getAll(el = 'html', target = document) {
+		if (el instanceof HTMLElement) [el, target] = reverse(arguments)
+		return target.querySelectorAll(el)
 	}),
 	getStyles = el => el.currentStyle || getComputedStyle(el, ''), // IE || другой браузер
 	get = (el = 'html', target = document) => target.querySelector(el),
@@ -76,17 +77,13 @@ const { log } = console,
 	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
 	create = (el = 'div') => document.createElement(el),
 	getRect = (el = document) => el.getBoundingClientRect(),
-	filter = nodeList._register({
-		func: function filter(obj, cb) { return [].filter.call(obj, cb) }
-	}),
-	clearClasses = nodeList._register({
-		func: function clearClasses(target, ...classList) {
-			target.filter(placeholder => {
-				let contains = false
-				classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true })
-				return contains
-			}).forEach(placeholder => placeholder.classList.remove(classList))
-		}
+	filter = nodeList._register(function filter(obj, cb) { return [].filter.call(obj, cb) }),
+	clearClasses = nodeList._register(function clearClasses(target, ...classList) {
+		target.filter(placeholder => {
+			let contains = false
+			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true })
+			return contains
+		}).forEach(placeholder => placeholder.classList.remove(classList))
 	})
 
 html.classList.add('active')
