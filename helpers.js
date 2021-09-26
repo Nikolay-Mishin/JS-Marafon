@@ -77,7 +77,7 @@ const { log } = console,
 	setHtml = (target = '', pos = 'beforeend', html = '') => (target ? target : document).insertAdjacentHTML(pos, html),
 	create = (el = 'div') => document.createElement(el),
 	getRect = (el = document) => el.getBoundingClientRect(),
-	filter = nodeList._register(function filter(obj, cb) { return [].filter.call(obj, cb) }),
+	filter = nodeList._register({ filter: (obj, cb) => [].filter.call(obj, cb) }),
 	clearClasses = nodeList._register(function clearClasses(target, ...classList) {
 		target.filter(placeholder => {
 			let contains = false
