@@ -3,6 +3,9 @@ const { log } = console,
 	{ assign, keys } = Object,
 	{ from } = Array,
 	nullProto = {}.__proto__,
+	is = (context, obj) => (function (obj) { return obj != null && obj.constructor === this; }).call(context, obj),
+	getFunc = func => func[keys(func).shift()] || func,
+	funcName = func => func.name.replace('bound ', '').trim(),
 	hasOwn = (() => {
 		if (!nullProto.hasOwnProperty('hasOwn')) {
 			Object.defineProperty(nullProto, 'hasOwn', { value: function hasOwn(prop) { return this.hasOwnProperty(prop) } })
@@ -28,8 +31,8 @@ const { log } = console,
 			function _register({ prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) { return register(this, ...arguments) })
 		return function register(obj, value, { prop, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
 			obj = obj.__proto__
-			value = value[keys(value).shift()] || value
-			prop = prop || value.name
+			value = getFunc(value)
+			prop = prop || funcName(value)
 			if (func) value.func = func
 			else {
 				const _func = {
@@ -47,8 +50,7 @@ const { log } = console,
 		}
 	})(),
 	getProto = ({})._register({ getProto(obj = Object, i = 0) { return protoList(obj)[i] } }),
-	protoList = ({})._register(function protoList(obj = Object) {
-		if (this instanceof Window) return protoList.call({}, obj)
+	protoList = ({})._register((function protoList(obj = Object) {
 		const proto = obj ? obj.__proto__ : null
 		this.objProto = this.objProto || proto
 		this._protoList = this._protoList || []
@@ -63,7 +65,7 @@ const { log } = console,
 			this._protoList = []
 			return _protoList
 		}
-	}),
+	}).bind({})),
 	nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = html.getProto(),
