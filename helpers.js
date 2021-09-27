@@ -3,7 +3,6 @@ const { log } = console,
 	{ assign, keys, fromEntries } = Object,
 	{ from } = Array,
 	nullProto = {}.__proto__,
-	is = (context, obj) => (function (obj) { return obj != null && obj.constructor === this; }).call(context, obj),
 	getFunc = func => func[keys(func).shift()] || func,
 	funcName = func => func.name.replace('bound ', '').trim(),
 	hasOwn = (() => {
