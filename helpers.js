@@ -1,6 +1,6 @@
 const { log } = console,
 	error = msg => { throw new Error(msg) },
-	{ assign, keys } = Object,
+	{ assign, keys, fromEntries } = Object,
 	{ from } = Array,
 	nullProto = {}.__proto__,
 	is = (context, obj) => (function (obj) { return obj != null && obj.constructor === this; }).call(context, obj),
@@ -49,6 +49,13 @@ const { log } = console,
 			return func
 		}
 	})(),
+	registerAll = (() => ({})._register(function registerAll(obj, ...funcList) {
+		return fromEntries(funcList.map(func => {
+			const { value, opts } = func
+			func = getFunc(value || func)
+			return [funcName(func), obj._register(func, opts || {})]
+		}))
+	}))(),
 	getProto = ({})._register({ getProto(obj = Object, i = 0) { return protoList(obj)[i] } }),
 	protoList = ({})._register((function protoList(obj = Object) {
 		const proto = obj ? obj.__proto__ : null
@@ -106,3 +113,25 @@ log(nodeList.getProto())
 log(htmlEl.getProto())
 
 log(nodeList.getProto().hasOwn('filter'))
+
+const helpers = ({}).registerAll(
+	{ getProto2(obj = Object, i = 0) { return protoList(obj)[i] } },
+	(function protoList2(obj = Object) {
+		const proto = obj ? obj.__proto__ : null
+		this.objProto = this.objProto || proto
+		this._protoList = this._protoList || []
+		if (proto) {
+			this._protoList.push(proto)
+			protoList.call(this, proto)
+		}
+		getProto
+		if (proto == this.objProto) {
+			const _protoList = this._protoList
+			this.objProto = null
+			this._protoList = []
+			return _protoList
+		}
+	}).bind({})
+)
+
+log(helpers)
