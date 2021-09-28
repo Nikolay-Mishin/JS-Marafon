@@ -55,8 +55,15 @@ const { log } = console,
 			return [funcName(func), obj._register(func, opts || {})]
 		}))
 	}))(),
-	getProto = ({})._register({ getProto(obj = Object, i = 0) { return protoList(obj)[i] } }),
-	protoList = ({})._register((function protoList(obj = Object) {
+	defineAll = (() => ({})._register(function defineAll(obj, desc) { return Object.defineProperties(obj, desc) }))(),
+	getDesc = (() => ({})._register(function getDesc(obj, key) { return Object.getOwnPropertyDescriptor(obj, key) }))(),
+	// Такой вариант функции присваивания позволяет копировать методы доступа.
+	assignDefine = (() => ({})._register(function assignDefine(target, ...sources) {
+		sources.forEach(source => target.defineAll(fromEntries(keys(source).map(key => [key, {}.getDesc.call(source, key)]))));
+		return target;
+	}))()
+
+const protoList = (function protoList(obj = Object) {
 		const proto = obj ? obj.__proto__ : null
 		this.objProto = this.objProto || proto
 		this._protoList = this._protoList || []
@@ -64,37 +71,88 @@ const { log } = console,
 			this._protoList.push(proto)
 			protoList.call(this, proto)
 		}
-		getProto
 		if (proto == this.objProto) {
 			const _protoList = this._protoList
 			this.objProto = null
 			this._protoList = []
 			return _protoList
 		}
-	}).bind({})),
-	nodeList = document.querySelectorAll('html'),
+	}).bind({}),
+	helpers = ({}).registerAll(protoList,
+		{ getProto(obj = Object, i = 0) { return protoList(obj)[i] } },
+		{ reverse(obj) { return from(obj).reverse() } }
+	)
+
+const nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = html.getProto(),
-	reverse = ({})._register({ reverse(obj) { return from(obj).reverse() } }),
-	getAll = htmlEl._register(function getAll(el = 'html', target = document) {
-		if (el instanceof HTMLElement) [el, target] = arguments.reverse()
-		return target.querySelectorAll(el)
-	}),
-	getStyles = htmlEl._register({ getStyles(el) { return el.currentStyle || getComputedStyle(el, '') } }), // IE || другой браузер
-	get = htmlEl._register({ get(el = 'html', target = document) { return target.querySelector(el) } }),
-	addEvent = htmlEl._register({ addEvent(el, event, cb) { return (el ? el : document).addEventListener(event, cb) } }),
-	setHtml = htmlEl._register({ setHtml(target = '', pos = 'beforeend', html = '') {
-		return (target ? target : document).insertAdjacentHTML(pos, html) } }),
 	create = (el = 'div') => document.createElement(el),
-	getRect = htmlEl._register({ getRect(el = document) { return el.getBoundingClientRect() } }),
-	filter = nodeList._register({ filter(obj, cb) { return [].filter.call(obj, cb) } }),
-	clearClasses = nodeList._register(function clearClasses(target, ...classList) {
-		target.filter(placeholder => {
-			let contains = false
-			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true })
-			return contains
-		}).forEach(placeholder => placeholder.classList.remove(classList))
-	})
+	nodeListHelpers = nodeList.registerAll(
+		{ filter(obj, cb) { return [].filter.call(obj, cb) } },
+		function clearClasses(target, ...classList) {
+			target.filter(placeholder => {
+				let contains = false
+				classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true })
+				return contains
+			}).forEach(placeholder => placeholder.classList.remove(classList))
+		}
+	),
+	htmlElHelpers = htmlEl.registerAll(
+		function getAll(el = 'html', target = document) {
+			if (el instanceof HTMLElement) [el, target] = arguments.reverse()
+			return target.querySelectorAll(el)
+		},
+		{ getStyles(el) { return el.currentStyle || getComputedStyle(el, '') } }, // IE || другой браузер
+		{ get(el = 'html', target = document) { return target.querySelector(el) } },
+		{ addEvent(el, event, cb) { return (el ? el : document).addEventListener(event, cb) } },
+		{ setHtml(target = '', pos = 'beforeend', html = '') { return (target ? target : document).insertAdjacentHTML(pos, html) } },
+		{ getRect(el = document) { return el.getBoundingClientRect() } },
+	)
+
+const { getProto, reverse } = helpers,
+	{ filter, clearClasses } = nodeListHelpers,
+	{ getAll, getStyles, get, addEvent, setHtml, getRect } = htmlElHelpers
+
+//const getProto = ({})._register({ getProto(obj = Object, i = 0) { return protoList(obj)[i] } }),
+//	protoList = ({})._register((function protoList(obj = Object) {
+//		const proto = obj ? obj.__proto__ : null
+//		this.objProto = this.objProto || proto
+//		this._protoList = this._protoList || []
+//		if (proto) {
+//			this._protoList.push(proto)
+//			protoList.call(this, proto)
+//		}
+//		getProto
+//		if (proto == this.objProto) {
+//			const _protoList = this._protoList
+//			this.objProto = null
+//			this._protoList = []
+//			return _protoList
+//		}
+//	}).bind({})),
+//	nodeList = document.querySelectorAll('html'),
+//	html = nodeList[0],
+//	htmlEl = html.getProto(),
+//	reverse = ({})._register({ reverse(obj) { return from(obj).reverse() } }),
+//	getAll = htmlEl._register(function getAll(el = 'html', target = document) {
+//		if (el instanceof HTMLElement) [el, target] = arguments.reverse()
+//		return target.querySelectorAll(el)
+//	}),
+//	getStyles = htmlEl._register({ getStyles(el) { return el.currentStyle || getComputedStyle(el, '') } }), // IE || другой браузер
+//	get = htmlEl._register({ get(el = 'html', target = document) { return target.querySelector(el) } }),
+//	addEvent = htmlEl._register({ addEvent(el, event, cb) { return (el ? el : document).addEventListener(event, cb) } }),
+//	setHtml = htmlEl._register({ setHtml(target = '', pos = 'beforeend', html = '') {
+//		return (target ? target : document).insertAdjacentHTML(pos, html) } }),
+//	create = (el = 'div') => document.createElement(el),
+//	getRect = htmlEl._register({ getRect(el = document) { return el.getBoundingClientRect() } }),
+//	filter = nodeList._register({ filter(obj, cb) { return [].filter.call(obj, cb) } }),
+//	clearClasses = nodeList._register(function clearClasses(target, ...classList) {
+//		target.filter(placeholder => {
+//			let contains = false
+//			classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true })
+//			return contains
+//		}).forEach(placeholder => placeholder.classList.remove(classList))
+//	})
 
 html.classList.add('active')
 log(html.classList)
@@ -113,24 +171,6 @@ log(htmlEl.getProto())
 
 log(nodeList.getProto().hasOwn('filter'))
 
-const helpers = ({}).registerAll(
-	{ getProto2(obj = Object, i = 0) { return protoList(obj)[i] } },
-	(function protoList2(obj = Object) {
-		const proto = obj ? obj.__proto__ : null
-		this.objProto = this.objProto || proto
-		this._protoList = this._protoList || []
-		if (proto) {
-			this._protoList.push(proto)
-			protoList.call(this, proto)
-		}
-		getProto
-		if (proto == this.objProto) {
-			const _protoList = this._protoList
-			this.objProto = null
-			this._protoList = []
-			return _protoList
-		}
-	}).bind({})
-)
+helpers.assignDefine(nodeListHelpers, htmlElHelpers)
 
 log(helpers)
