@@ -29,8 +29,7 @@ const { log } = console,
 		nullProto._define(
 			function _register({ prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) { return register(this, ...arguments) })
 		return function register(obj, value, { prop, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
-			[obj, value] = [obj.__proto__, getFunc(value)]
-			prop = prop || funcName(value)
+			[obj, value, prop] = [obj.__proto__, getFunc(value), prop || funcName(value)]
 			if (func) value.func = func
 			else {
 				const _func = {
