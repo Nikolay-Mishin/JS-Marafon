@@ -104,7 +104,7 @@ const helpers = ({}).registerAll(
 		{ getRect(el = document) { return el.getBoundingClientRect() } },
 	)
 
-const { getProto, reverse } = helpers,
+const { getProto, protoList, reverse } = helpers,
 	{ filter, clearClasses } = nodeListHelpers,
 	{ getAll, getStyles, get, addEvent, setHtml, getRect } = htmlElHelpers
 
