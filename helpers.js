@@ -59,27 +59,26 @@ const { log } = console,
 		return target;
 	}))()
 
-const protoList = (function protoList(obj = Object) {
-		const proto = obj ? obj.__proto__ : null
-		this.objProto = this.objProto || proto
-		this._protoList = this._protoList || []
-		if (proto) {
-			this._protoList.push(proto)
-			protoList.call(this, proto)
-		}
-		if (proto == this.objProto) {
-			const _protoList = this._protoList
-			this.objProto = null
-			this._protoList = []
-			return _protoList
-		}
-	}).bind({}),
-	helpers = ({}).registerAll(protoList,
-		{ getProto(obj = Object, i = 0) { return protoList(obj)[i] } },
+const helpers = ({}).registerAll(
+		{ getProto(obj = Object, i = 0) { return obj.protoList()[i] } },
+		protoList = (function protoList(obj = Object) {
+			const proto = obj ? obj.__proto__ : null
+			this.objProto = this.objProto || proto
+			this._protoList = this._protoList || []
+			if (proto) {
+				this._protoList.push(proto)
+				protoList.call(this, proto)
+			}
+			if (proto == this.objProto) {
+				const _protoList = this._protoList
+				this.objProto = null
+				this._protoList = []
+				return _protoList
+			}
+		}).bind({}),
 		{ reverse(obj) { return from(obj).reverse() } }
-	)
-
-const nodeList = document.querySelectorAll('html'),
+	),
+	nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = html.getProto(),
 	create = (el = 'div') => document.createElement(el),
