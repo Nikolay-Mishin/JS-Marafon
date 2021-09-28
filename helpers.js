@@ -61,7 +61,7 @@ const { log } = console,
 
 const helpers = ({}).registerAll(
 		{ getProto(obj = Object, i = 0) { return obj.protoList()[i] } },
-		protoList = (function protoList(obj = Object) {
+		(function protoList(obj = Object) {
 			const proto = obj ? obj.__proto__ : null
 			this.objProto = this.objProto || proto
 			this._protoList = this._protoList || []
