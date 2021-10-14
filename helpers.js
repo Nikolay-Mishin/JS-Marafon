@@ -59,6 +59,16 @@ const { log } = console,
 		return target;
 	}))()
 
+function filterObj(obj, cb) { return Object.fromEntries(Object.entries(obj).filter(cb)) }
+Object.defineProperty(nullProto, '_filter', {
+	value: function filter(prop) { return filterObj(this, prop) },
+	enumerable: false,
+	writable: false
+})
+log(Object._filter)
+log(({})._filter)
+log(nullProto)
+
 const helpers = ({}).registerAll(
 		{ getProto(obj = Object, i = 0) { return obj.protoList()[i] } },
 		(function protoList(obj = Object) {
@@ -86,6 +96,7 @@ const helpers = ({}).registerAll(
 		{ filter(obj, cb) { return [].filter.call(obj, cb) } },
 		function clearClasses(target, ...classList) {
 			target.filter(placeholder => {
+				log(placeholder)
 				let contains = false
 				classList.forEach(_class => { if (placeholder.classList.contains(_class)) contains = true })
 				return contains
