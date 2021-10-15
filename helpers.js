@@ -135,7 +135,7 @@ const helpers = ({}).registerAll(
 const nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = html.getProto(),
-	create = (el = 'div') => document.createElement(el),
+	create = {}._register(function create(el = 'div') { return document.createElement(el) }),
 	nodeListHelpers = nodeList.registerAll(
 		{ filter(obj, cb) { return [].filter.call(obj, cb) } },
 		function clearClasses(target, ...classList) {
@@ -156,7 +156,9 @@ const nodeList = document.querySelectorAll('html'),
 		{ getStyles(el) { return el.currentStyle || getComputedStyle(el, '') } }, // IE || другой браузер
 		{ get(el = 'html', target = document) { return target.querySelector(el) } },
 		{ addEvent(el, event, cb) { return (el ? el : document).addEventListener(event, cb) } },
-		{ setHtml(target = '', pos = 'beforeend', html = '') { return (target ? target : document).insertAdjacentHTML(pos, html) } },
+		function setHtml(target = '', pos = 'beforeend', html = '') {
+			return (target ? target : document).insertAdjacentHTML(pos, html);
+		},
 		{ getRect(el = document) { return el.getBoundingClientRect() } },
 	)
 
