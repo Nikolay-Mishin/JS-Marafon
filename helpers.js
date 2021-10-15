@@ -3,6 +3,8 @@ const { log } = console,
 	{ assign, keys, fromEntries } = Object,
 	{ from } = Array,
 	nullProto = {}.__proto__,
+	objProto = Object.prototype,
+	arrProto = Array.prototype,
 	getFunc = func => func[keys(func).shift()] || func,
 	funcName = func => func.name.replace('bound ', '').trim(),
 	hasOwn = (() => {
@@ -28,8 +30,9 @@ const { log } = console,
 	register = (() => {
 		nullProto._define(
 			function _register({ prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) { return register(this, ...arguments) })
-		return function register(obj, value, { prop, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) {
-			[obj, value, prop] = [obj.__proto__, getFunc(value), prop || funcName(value)]
+		return function register(obj, value, { prop, func, def = false, enumerable = false, configurable = false, writable = false, get, set } = {}) {
+			const proto = obj.prototype ?? obj.__proto__;
+			[value, prop] = [getFunc(value), prop ?? funcName(value)]
 			if (func) value.func = func
 			else {
 				const _func = {
@@ -39,8 +42,8 @@ const { log } = console,
 				func = value
 				value = _func[prop]
 			}
-			!(def || obj === nullProto) ? obj[prop] = value :
-				obj._define(value, { prop, enumerable, configurable, writable, get, set })
+			(def ? obj : proto)._define(value,
+				{ prop, enumerable, configurable, writable: writable || proto === nullProto, get, set })
 			return func
 		}
 	})(),
@@ -60,34 +63,28 @@ const { log } = console,
 	}))()
 
 function filterObj(obj, cb) { return Object.fromEntries(Object.entries(obj).filter(cb)) }
-Object.defineProperty(nullProto, '_filter', {
-	value: function filter(prop) { return filterObj(this, prop) },
-	enumerable: false,
-	writable: false
-})
-log(Object._filter)
-log(({})._filter)
-log(nullProto)
+
+Object.defineProperty(nullProto, 'filter', { value: function filter(cb) { return filterObj(this, cb) } })
 
 const helpers = ({}).registerAll(
-		{ getProto(obj = Object, i = 0) { return obj.protoList()[i] } },
-		(function protoList(obj = Object) {
-			const proto = obj ? obj.__proto__ : null
-			this.objProto = this.objProto || proto
-			this._protoList = this._protoList || []
-			if (proto) {
-				this._protoList.push(proto)
-				protoList.call(this, proto)
-			}
-			if (proto == this.objProto) {
-				const _protoList = this._protoList
-				this.objProto = null
-				this._protoList = []
-				return _protoList
-			}
-		}).bind({}),
-		{ reverse(obj) { return from(obj).reverse() } }
-	),
+	{ getProto(obj = Object, i = 0) { return obj.protoList()[i] } },
+	(function protoList(obj = Object) {
+		const proto = obj.prototype ?? obj.__proto__
+		if (proto) {
+			this.objProto = this.objProto ?? proto
+			this._protoList = this._protoList ?? []
+			this._protoList.push(proto)
+			protoList.call(this, proto)
+		}
+		if (proto == this.objProto) {
+			const _protoList = this._protoList
+			this.objProto = null
+			this._protoList = []
+			return _protoList
+		}
+	}).bind({}),
+	{ reverse(obj) { return from(obj).reverse() } }
+),
 	nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = html.getProto(),
@@ -119,6 +116,12 @@ const { getProto, protoList, reverse } = helpers,
 	{ filter, clearClasses } = nodeListHelpers,
 	{ getAll, getStyles, get, addEvent, setHtml, getRect } = htmlElHelpers
 
+Object.defineProperty(nullProto, '_filter', {
+	value: function filter(cb) { return filterObj(this, cb) },
+	enumerable: false,
+	writable: false
+})
+
 html.classList.add('active')
 log(html.classList)
 
@@ -139,3 +142,32 @@ log(nodeList.getProto().hasOwn('filter'))
 helpers.assignDefine(nodeListHelpers, htmlElHelpers)
 
 log(helpers)
+
+//log(nullProto)
+//log(objProto)
+//log(arrProto)
+
+//log(Array.protoList())
+//log(Array.prototype)
+
+//log([].protoList())
+//log([].prototype)
+
+//log(filter)
+//log(nodeList.filter)
+//log({}.filter)
+//log([].filter)
+//log(Object.filter)
+
+//log([].getProto())
+//log([].getProto(1))
+//log({}.prototype)
+//log([].prototype)
+//log(nodeList.__proto__)
+//log(nodeList.prototype)
+
+//log(Object.hasOwn('filter'))
+//log({}.hasOwn('filter'))
+//log(nodeList.hasOwn('filter'))
+//log(nullProto.hasOwn('filter'))
+//log(nodeList.__proto__.hasOwn('filter'))
