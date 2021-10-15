@@ -1,91 +1,128 @@
 const { log } = console,
-	error = msg => { throw new Error(msg) },
-	{ assign, keys, fromEntries } = Object,
-	{ from } = Array,
-	nullProto = {}.__proto__,
+	error = msg => { throw new Error(msg) }
+
+const nullProto = {}.__proto__,
 	objProto = Object.prototype,
 	arrProto = Array.prototype,
-	getFunc = func => func[keys(func).shift()] || func,
+	getFunc = func => func[keys(func).shift()] ?? func,
 	funcName = func => func.name.replace('bound ', '').trim(),
+	is = (context, obj) => (function (obj) { return obj != null && obj.constructor === this; }).call(context, obj);
+
+const { assign, keys, values, fromEntries, entries, getPrototypeOf } = Object,
+	{ isArray, from } = Array,
+	isObject = obj => is(Object, obj),
+	isFunc = obj => is(Function, obj),
+	// return {} => __proto__ = obj
+	// new Object(obj) - return obj => __proto__ = obj.__proto__
+	createObj = (proto = Object, props) => Object.create(proto, props),
+	createAssign = (proto = Object, ...assignList) => assign(createObj(proto), ...assignList),
 	hasOwn = (() => {
 		if (!nullProto.hasOwnProperty('hasOwn')) {
-			Object.defineProperty(nullProto, 'hasOwn', { value: function hasOwn(prop) { return this.hasOwnProperty(prop) } })
+			Object.defineProperty(nullProto, 'hasOwn', { value: function hasOwn(prop) { return this.hasOwnProperty(prop); } });
 		}
-		return (obj, prop) => obj.hasOwn(prop)
+		return (obj, prop) => obj.hasOwn(prop);
 	})(),
 	define = (() => {
 		if (!nullProto.hasOwn('_define')) Object.defineProperty(nullProto, '_define', {
 			value:
-				function _define(value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) { return define(this, ...arguments) }
+				function _define(value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) { return define(this, ...arguments); }
 		})
 		return function define(obj, value = null, { prop = '', enumerable = false, configurable = false, writable = false, get, set } = {}) {
-			prop = prop || value.name
+			prop = prop || value.name;
 			if (!obj.hasOwn(prop)) {
-				const desc = assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable })
-				Object.defineProperty(obj, prop, desc)
+				const desc = assign({ enumerable, configurable }, get || set ? { get, set } : { value, writable });
+				Object.defineProperty(obj, prop, desc);
 			}
-			return value
-		}
+			return value;
+		};
 	})(),
 	register = (() => {
 		nullProto._define(
-			function _register({ prop, value, func, def, enumerable = false, configurable = false, writable = false, get, set } = {}) { return register(this, ...arguments) })
-		return function register(obj, value, { prop, func, def = false, enumerable = false, configurable = false, writable = false, get, set } = {}) {
+			function _register({ prop, value, def, enumerable = false, configurable = false, writable = false, get, set } = {}) { return register(this, ...arguments); }
+		);
+		return function register(obj, value, { prop, def = false, enumerable = false, configurable = false, writable = false, get, set } = {}) {
 			const proto = obj.prototype ?? obj.__proto__;
-			[value, prop] = [getFunc(value), prop ?? funcName(value)]
-			if (func) value.func = func
-			else {
-				const _func = {
-					[prop]: function (...args) { return _func[prop].func(this, ...args) }
-				}
-				_func[prop].func = value
-				func = value
-				value = _func[prop]
-			}
+			[value, prop] = [getFunc(value), prop ?? funcName(value)];
+
+			const func = value,
+				_func = {
+					[prop]: function (...args) { return _func[prop].func(this, ...args); }
+				};
+			_func[prop].func = value;
+			value = _func[prop];
+
 			(def ? obj : proto)._define(value,
-				{ prop, enumerable, configurable, writable: writable || proto === nullProto, get, set })
-			return func
-		}
+				{ prop, enumerable, configurable, writable: writable || proto === nullProto, get, set });
+
+			return func;
+		};
 	})(),
 	registerAll = (() => ({})._register(function registerAll(obj, ...funcList) {
 		return fromEntries(funcList.map(func => {
-			const { value, opts } = func
-			func = getFunc(value || func)
-			return [funcName(func), obj._register(func, opts || {})]
-		}))
+			const { value, opts = {} } = func;
+			func = getFunc(value || func);
+			return [funcName(func), obj._register(func, opts)];
+		}));
 	}))(),
-	defineAll = (() => ({})._register(function defineAll(obj, desc) { return Object.defineProperties(obj, desc) }))(),
-	getDesc = (() => ({})._register(function getDesc(obj, key) { return Object.getOwnPropertyDescriptor(obj, key) }))(),
-	// Такой вариант функции присваивания позволяет копировать методы доступа.
-	assignDefine = (() => ({})._register(function assignDefine(target, ...sources) {
-		sources.forEach(source => target.defineAll(fromEntries(keys(source).map(key => [key, {}.getDesc.call(source, key)]))));
-		return target;
-	}))()
+	call = (context, ...args) => context.call(context, ...args);
 
 function filterObj(obj, cb) { return Object.fromEntries(Object.entries(obj).filter(cb)) }
 
 Object.defineProperty(nullProto, 'filter', { value: function filter(cb) { return filterObj(this, cb) } })
 
 const helpers = ({}).registerAll(
-	{ getProto(obj = Object, i = 0) { return obj.protoList()[i] } },
+	assign, keys, values, fromEntries, entries, getPrototypeOf, isArray, from,
+	isObject, isFunc,
+	function getProto(obj = Object, i = 0) { return obj.protoList()[i]; },
 	(function protoList(obj = Object) {
-		const proto = obj.prototype ?? obj.__proto__
+		const proto = obj.prototype ?? obj.__proto__;
 		if (proto) {
-			this.objProto = this.objProto ?? proto
-			this._protoList = this._protoList ?? []
-			this._protoList.push(proto)
-			protoList.call(this, proto)
+			this.objProto = this.objProto ?? proto;
+			this._protoList = this._protoList ?? [];
+			this._protoList.push(proto);
+			protoList.call(this, proto);
 		}
 		if (proto == this.objProto) {
-			const _protoList = this._protoList
-			this.objProto = null
-			this._protoList = []
-			return _protoList
+			const _protoList = this._protoList;
+			[this.objProto, this._protoList] = [null, []];
+			return _protoList;
 		}
 	}).bind({}),
-	{ reverse(obj) { return from(obj).reverse() } }
-),
-	nodeList = document.querySelectorAll('html'),
+	function forEach(obj, cb) { for (let key in obj) cb(obj[key], key); },
+	function defineAll(obj, desc) { return Object.defineProperties(obj, desc) },
+	function getDesc(obj, key) { return Object.getOwnPropertyDescriptor(obj, key) },
+	// Такой вариант функции присваивания позволяет копировать методы доступа
+	function assignDefine(target, ...sources) {
+		sources.forEach(source => defineAll(target, fromEntries(keys(source).map(key => [key, getDesc(source, key)]))));
+		return target;
+	},
+	function toJson(item, space = null, replacer = null) { return JSON.stringify(item, replacer, space); },
+	function isJson(item) { return item.jsonParse() ? true : false; },
+	function jsonParse(item) {
+		try {
+			item = JSON.parse(item);
+		}
+		catch (e) {
+			return null;
+		}
+		return item;
+	},
+	function $delete(obj, ...keys) { keys.forEach(key => delete obj[key]); return obj; },
+	function renameKeys(obj, { keyList, searchVal = '^_|\W', replaceVal = '' } = {}) {
+		keyList = keyList ?? arguments.slice(1);
+		const newKeys = keyList.map((key, i) => {
+			key = key.replace(new RegExp(searchVal), replaceVal);
+			obj[key] = obj[keyList[i]];
+			return key;
+		});
+		$delete(obj, ...keyList);
+		return newKeys;
+	},
+	function empty(obj) { return (obj.isObject() ? obj.keys() : obj).length == 0; },
+	function reverse(obj, cb = null, $this = obj) { return from(obj, cb ?? function(v, k) { return v; }, $this).reverse(); }
+);
+
+const nodeList = document.querySelectorAll('html'),
 	html = nodeList[0],
 	htmlEl = html.getProto(),
 	create = (el = 'div') => document.createElement(el),
@@ -112,7 +149,10 @@ const helpers = ({}).registerAll(
 		{ getRect(el = document) { return el.getBoundingClientRect() } },
 	)
 
-const { getProto, protoList, reverse } = helpers,
+const {
+	getProto, protoList, forEach, defineAll, getDesc, assignDefine,
+	toJson, isJson, jsonParse, $delete, renameKeys, empty, reverse
+} = helpers,
 	{ filter, clearClasses } = nodeListHelpers,
 	{ getAll, getStyles, get, addEvent, setHtml, getRect } = htmlElHelpers
 
@@ -142,32 +182,3 @@ log(nodeList.getProto().hasOwn('filter'))
 helpers.assignDefine(nodeListHelpers, htmlElHelpers)
 
 log(helpers)
-
-//log(nullProto)
-//log(objProto)
-//log(arrProto)
-
-//log(Array.protoList())
-//log(Array.prototype)
-
-//log([].protoList())
-//log([].prototype)
-
-//log(filter)
-//log(nodeList.filter)
-//log({}.filter)
-//log([].filter)
-//log(Object.filter)
-
-//log([].getProto())
-//log([].getProto(1))
-//log({}.prototype)
-//log([].prototype)
-//log(nodeList.__proto__)
-//log(nodeList.prototype)
-
-//log(Object.hasOwn('filter'))
-//log({}.hasOwn('filter'))
-//log(nodeList.hasOwn('filter'))
-//log(nullProto.hasOwn('filter'))
-//log(nodeList.__proto__.hasOwn('filter'))
